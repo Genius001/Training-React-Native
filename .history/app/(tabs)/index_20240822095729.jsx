@@ -1,29 +1,10 @@
 import { Image, StyleSheet, View, Text, Button } from "react-native";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
 import Constants from "expo-constants";
-import { Row } from '@/components/Grid';
-import { Col } from './../../components/Grid';
-import ButtonIcon from './../../components/ButtonIcon';
-import ListCar from './../../components/ListCar';
-import { useState, useEffect } from 'react';
-import React from "react";
+import ButtonIcon from "@/components/ButtonIcon";
+import { Col, Row } from "@/components/Grid";
 
 export default function HomeScreen() {
-  const [cars, setCars] = useState([]);
-
-  useEffect(() => {
-    const fetchCars = async () => {
-      try {
-        const response = await fetch('http://api-car-rental.binaracademy.org/customer/car');
-        const data = await response.json();
-        setCars(data);
-      } catch (error) {
-        console.error("Failed to fetch cars:", error);
-      }
-    };
-    fetchCars();
-  }, []);
-
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: "#A43333", dark: "#A43333" }}
@@ -58,45 +39,13 @@ export default function HomeScreen() {
         </View>
       </View>
       <View>
-        <Row justifyContent={'space-between'}>
-          <Col>
-            <ButtonIcon name={'truck'} color={'#ffffff'}></ButtonIcon>
-            <Text style={styles.iconText}>Sewa Mobil</Text>
-
-          </Col>
-          <Col>
-            <ButtonIcon name={'box'} color={'#ffffff'}></ButtonIcon>
-            <Text style={styles.iconText}>Sewa Mobil</Text>
-          </Col>
-          <Col>
-            <ButtonIcon name={'key'} color={'#ffffff'}></ButtonIcon>
-            <Text style={styles.iconText}>Sewa Mobil</Text>
-          </Col>
-          <Col>
-            <ButtonIcon name={'camera'} color={'#ffffff'}></ButtonIcon>
-            <Text style={styles.iconText}>Sewa Mobil</Text>
-          </Col>
+        <Row>
+          <Col><ButtonIcon>
+            <Col></Col>
+          </ButtonIcon></Col>
         </Row>
       </View>
-      <View>
-        <Col>
-          <Text style={styles.listTitle}>Daftar Pilihan Mobil</Text>
-
-          {cars.length > 0 ? cars.map((el) => (
-            <ListCar
-              key={el.id}
-              image={{ uri: el.image }}
-              carName={el.name}
-              passengers={5}
-              baggage={2}
-              price={'Rp ' + el.price}
-            />
-          )) : (
-            <Text>No Cars Available</Text>
-          )}
-        </Col>
-      </View>
-    </ParallaxScrollView >
+    </ParallaxScrollView>
   );
 }
 
@@ -144,20 +93,5 @@ const styles = StyleSheet.create({
     fontFamily: "Poppins",
     fontSize: 16
   },
-  iconText: {
-    color: "#000000",
-    fontFamily: "Poppins",
-    fontSize: 12,
-    fontWeight: "700",
-    paddingTop: 5,
-    textAlign: "center"
-  },
-  listTitle: {
-    color: "#000000",
-    fontFamily: "Poppins",
-    fontSize: 14,
-    fontWeight: "700",
-    paddingBottom: 5,
-  }
 
 });

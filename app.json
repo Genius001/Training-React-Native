@@ -1,6 +1,7 @@
 
 {
   "expo": {
+    "jsEngine": "hermes",
     "name": "TMMIN-Car-Rental-App",
     "slug": "TMMIN-Car-Rental-App",
     "version": "1.0.0",
