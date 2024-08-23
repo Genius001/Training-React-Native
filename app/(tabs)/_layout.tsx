@@ -1,4 +1,4 @@
-import { Tabs } from 'expo-router';
+import { Tabs, useSegments } from 'expo-router';
 import React from 'react';
 import { TabBarIcon } from '@/components/navigation/TabBarIcon';
 import { Colors } from '@/constants/Colors';
@@ -6,9 +6,11 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const segments = useSegments();
 
   return (
     <Tabs
+    backBehavior='history'
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         headerShown: false,
@@ -23,11 +25,15 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="CarList"
+        name='(carList)'
         options={{
           title: 'CarList',
+          href: '/(tabs)/(carList)',
+          tabBarStyle: { 
+            display: segments.includes('details') ? 
+            'none' : 'flex' },
           tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'list': 'list-outline'} color={color} />
+            <TabBarIcon name={focused ? 'list' : 'list-outline'} color={color} />
           ),
         }}
       />
@@ -36,7 +42,7 @@ export default function TabLayout() {
         options={{
           title: 'Profile',
           tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ?  'person': 'person-outline' } color={color} />
+            <TabBarIcon name={focused ? 'person' : 'person-outline'} color={color} />
           ),
         }}
       />

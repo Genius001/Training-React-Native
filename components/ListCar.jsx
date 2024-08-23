@@ -1,8 +1,7 @@
-import { View, Text } from 'react-native'
+import { View, Text, StyleSheet, Image, Pressable } from 'react-native'
 import React from 'react'
 import { Row, Col } from '@/components/Grid';
 import { Feather } from '@expo/vector-icons';
-import { StyleSheet, Image } from 'react-native';
 
 const formatCurrency = newCurrency =
     new Intl.NumberFormat('id-ID', {
@@ -10,9 +9,18 @@ const formatCurrency = newCurrency =
         currency: 'IDR',
     })
 
-export default function ListCar({ image, carName, passengers, baggage, price }) {
+export default function ListCar({ onPress,
+    image,
+    carName,
+    passengers,
+    baggage,
+    price,
+    style, }) {
     return (
-        <View style={styles.card}>
+
+        <Pressable
+            style={{ ...styles.card, ...style }}
+            onPress={onPress}>
             <Row alignItems={'center'} gap={20}>
                 <Col>
                     <Image style={styles.img} source={image} />
@@ -33,7 +41,7 @@ export default function ListCar({ image, carName, passengers, baggage, price }) 
                 </Col>
 
             </Row>
-        </View>
+        </Pressable>
     );
 }
 
