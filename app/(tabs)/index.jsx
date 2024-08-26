@@ -7,6 +7,7 @@ import ListCar from './../../components/ListCar';
 import { useState, useEffect } from 'react';
 import { router } from "expo-router";
 import React from "react";
+import * as SecureStore from "expo-secure-store";
 
 export default function HomeScreen() {
   const [cars, setCars] = useState([]);
@@ -18,6 +19,7 @@ export default function HomeScreen() {
     setLoading(true);
 
     const fetchCars = async () => {
+      console.log(await SecureStore.getItemAsync("user"));
       try {
         const response = await fetch('http://api-car-rental.binaracademy.org/customer/car', { signal });
         const data = await response.json();
@@ -106,7 +108,7 @@ export default function HomeScreen() {
           baggage={4}
           price={item.price}
           onPress={() =>
-            router.navigate('(carList)/details/' + item.id)
+            router.push('(carList)/details/' + item.id)
           }
         />
       )}

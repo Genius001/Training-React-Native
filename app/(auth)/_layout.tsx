@@ -9,8 +9,8 @@ export default function () {
               screenOptions={{
               headerShown: false,
           }}>
-              <Stack.Screen name="index" />
-              <Stack.Screen name="register" />
+              <Stack.Screen name="Login" />
+              <Stack.Screen name="Register" />
           </Stack>
         </View>
   );

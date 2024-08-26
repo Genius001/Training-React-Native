@@ -1,8 +1,8 @@
-import { Tabs, useSegments } from 'expo-router';
-import React from 'react';
-import { TabBarIcon } from '@/components/navigation/TabBarIcon';
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { Tabs, useSegments } from "expo-router";
+import React from "react";
+import { TabBarIcon } from "@/components/navigation/TabBarIcon";
+import { Colors } from "@/constants/Colors";
+import { useColorScheme } from "@/hooks/useColorScheme";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -10,39 +10,49 @@ export default function TabLayout() {
 
   return (
     <Tabs
-    backBehavior='history'
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
         headerShown: false,
-      }}>
+      }}
+      backBehavior="history"
+    >
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
+          title: "Home",
           tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'home' : 'home-outline'} color={color} />
+            <TabBarIcon
+              name={focused ? "home" : "home-outline"}
+              color={color}
+            />
           ),
         }}
       />
       <Tabs.Screen
-        name='(carList)'
+        name="(carList)"
         options={{
-          title: 'CarList',
-          href: '/(tabs)/(carList)',
-          tabBarStyle: { 
+          title: "Daftar Mobil",
+          tabBarStyle: {
             display: segments.includes('details') ? 
-            'none' : 'flex' },
+            'none' : 'flex'
+          },
           tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'list' : 'list-outline'} color={color} />
+            <TabBarIcon
+              name={focused ? "list" : "list-outline"}
+              color={color}
+            />
           ),
         }}
       />
       <Tabs.Screen
         name="Profile"
         options={{
-          title: 'Profile',
+          title: "Profile",
           tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'person' : 'person-outline'} color={color} />
+            <TabBarIcon
+              name={focused ? "person" : "person-outline"}
+              color={color}
+            />
           ),
         }}
       />
