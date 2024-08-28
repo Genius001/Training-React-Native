@@ -8,36 +8,24 @@ import { useState, useEffect } from 'react';
 import { router } from "expo-router";
 import React from "react";
 import * as SecureStore from "expo-secure-store";
+import { useSelector, useDispatch } from "react-redux";
+import { getCar, selectCar } from '../../redux/reducers/car/carSlice';
 
 export default function HomeScreen() {
-  const [cars, setCars] = useState([]);
-  const [loading, setLoading] = useState(false);
+
+  const { data, isLoading } = useSelector(selectCar);
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    const controller = new AbortController();
-    const signal = controller.signal;
-    setLoading(true);
+    const controller = new AbortController(); // UseEffect cleanup untuk menghindari memory Leak
+    const signal = controller.signal; // UseEffect cleanup
 
-    const fetchCars = async () => {
-      console.log(await SecureStore.getItemAsync("user"));
-      try {
-        const response = await fetch('http://api-car-rental.binaracademy.org/customer/car', { signal });
-        const data = await response.json();
-        setCars(data);
-      } catch (error) {
-        if (error.name === "AbortError") {
-          console.error("Failed to fetch cars:", error);
-        } else {
-          console.log(error);
-        }
-      } finally {
-        setLoading(false);
-      }
+    dispatch(getCar(signal));
+
+    return () => {
+      // cancel request sebelum component di close
+      controller.abort();
     };
-
-    fetchCars(); // Correct placement of the fetchCars function call
-
-    return () => controller.abort();
   }, []);
 
   return (
@@ -95,8 +83,8 @@ export default function HomeScreen() {
           </View>
         </>
       }
-      loading={loading}
-      data={cars}
+      loading={isLoading}
+      data={data}
       keyExtractor={(item) => item.id.toString()}
       renderItem={({ item }) => (
         <ListCar
@@ -104,8 +92,8 @@ export default function HomeScreen() {
           key={item.id}
           image={{ uri: item.image }}
           carName={item.name}
-          passengers={5}
-          baggage={4}
+          passengers={item.passengers || 5}
+          baggage={item.baggage || 4}
           price={item.price}
           onPress={() =>
             router.push('(carList)/details/' + item.id)

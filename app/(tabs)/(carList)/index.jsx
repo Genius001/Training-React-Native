@@ -9,44 +9,33 @@ import {
     ActivityIndicator,
 } from 'react-native';
 import ListCar from '@/components/ListCar';
+import { useSelector, useDispatch } from "react-redux";
+import { getCar, selectCar } from '@/redux/reducers/car/carSlice';
 import { router } from "expo-router";
 
 export default function CarList() {
-    const [carList, setCarList] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
+    const { isError, isLoading, data } = useSelector(selectCar);
+    const dispatch = useDispatch();
 
     useEffect(() => {
         const controller = new AbortController();
         const signal = controller.signal;
 
-        const fetchCars = async () => {
-            setLoading(true);
-            try {
-                const response = await fetch('http://api-car-rental.binaracademy.org/customer/car', { signal });
-                const data = await response.json();
-                setCarList(data);
-            } catch (error) {
-                console.error("Failed to fetch cars:", error);
-                setError("Failed to load cars. Please try again.");
-            } finally {
-                setLoading(false);
-            }
+        dispatch(getCar(signal));
+
+        return () => {
+            controller.abort();
         };
-
-        fetchCars();
-
-        return () => controller.abort();
     }, []);
 
     const renderCar = ({ item }) => (
         <ListCar
             image={{ uri: item.image }}
             carName={item.name}
-            passengers={5}
-            baggage={2}
-            price={item.price}
+            passengers={item.passengers || 5}
+            baggage={item.baggage || 2}
             onPress={() => router.push(`(carList)/details/${item.id}`)}
+            price={item.price}
         />
     );
 
@@ -54,17 +43,16 @@ export default function CarList() {
         <SafeAreaView style={styles.safeArea}>
             <View style={styles.container}>
                 <Text style={styles.title}>Daftar Mobil</Text>
-                {loading ? (
+                {isLoading ? (
                     <ActivityIndicator size="large" color="#0000ff" />
-                ) : error ? (
-                    <Text style={styles.errorText}>{error}</Text>
-                ) : carList.length > 0 ? (
+                ) : isError ? (
+                    <Text style={styles.errorText}>Failed to load cars. Please try again later.</Text>
+                ) : data.length > 0 ? (
                     <FlatList
-                        data={carList}
+                        data={data}
                         renderItem={renderCar}
                         keyExtractor={item => item.id.toString()}
-                        viewabilityConfig={{ waitForInteraction: true }}
-                        ListHeaderComponent={<View style={{ height: 20 }} />} // Add spacing below the title
+                        ListHeaderComponent={<View style={{ height: 20 }} />}
                     />
                 ) : (
                     <Text style={styles.emptyText}>No Cars Available</Text>
@@ -92,6 +80,7 @@ const styles = StyleSheet.create({
         color: 'red',
         fontSize: 16,
         textAlign: 'center',
+        marginTop: 20,
     },
     emptyText: {
         fontSize: 18,
