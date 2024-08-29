@@ -1,74 +1,69 @@
 import {
     View, Text, Image, TextInput,
-    Button, StyleSheet, Alert, TouchableOpacity
+    Button, StyleSheet, TouchableOpacity
 } from 'react-native';
 import React, { useState } from 'react';
 import { Link, router } from 'expo-router';
 import ModalPopUp from '../../components/Modal';
 import { Feather } from '@expo/vector-icons';
-import * as SecureStore from 'expo-secure-store';
-
-async function save(key, value) {
-    await SecureStore.setItemAsync(key, value);
-}
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchAuth } from '@/redux/reducers/auth/authApi';
+import { selectAuth } from '@/redux/reducers/auth/authSlice';
 
 export default function Login() {
     const [modalVisible, setModalVisible] = useState(false);
+    const [modalMessage, setModalMessage] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [formData, setFormData] = useState({
         email: '',
         password: '',
     });
 
+    const dispatch = useDispatch();
+    const authState = useSelector(selectAuth);
+
     const handleChange = (name, value) => {
         setFormData({ ...formData, [name]: value });
     };
 
     const handleSignIn = async () => {
-        console.log('Form Data:', formData);
         const { email, password } = formData;
 
         if (!email || !password) {
-            Alert.alert('Error', 'Please fill out all fields.');
+            showModal('Please fill out all fields.');
             return;
         }
         if (!email.includes('@')) {
-            Alert.alert('Error', 'Please enter a valid email address.');
+            showModal('Please enter a valid email address.');
             return;
         }
         if (password.length < 6) {
-            Alert.alert('Error', 'Password must be at least 6 characters long.');
+            showModal('Password must be at least 6 characters long.');
             return;
         }
         if (password.includes(' ')) {
-            Alert.alert('Error', 'Password cannot contain spaces.');
+            showModal('Password cannot contain spaces.');
             return;
         }
 
         try {
-            const response = await fetch("https://api-car-rental.binaracademy.org/customer/auth/login", {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    email: formData.email,
-                    password: formData.password,
-                }),
-            });
-
-            const body = await response.json();
-            if (!response.ok) throw new Error(body.message)
-            save("user", JSON.stringify(body))
-            setModalVisible(true);
+            await dispatch(fetchAuth({ email, password })).unwrap();
+            showModal('Login Successful!');
             setTimeout(() => {
                 setModalVisible(false);
                 router.navigate("../(tabs)");
             }, 1000);
         } catch (e) {
-            console.log(e)
-            console.log(e.message);
+            showModal(`${e.message}`);
         }
+    };
+
+    const showModal = (message) => {
+        setModalMessage(message);
+        setModalVisible(true);
+        setTimeout(() => {
+            setModalVisible(false);
+        }, 2000);
     };
 
     return (
@@ -76,31 +71,28 @@ export default function Login() {
             <Image style={styles.logo} source={require('@/assets/images/tmmin.png')} />
             <Text style={styles.heading}>Welcome Back!</Text>
             <View style={styles.formContainer}>
-                <Text style={styles.formLabel}>Email</Text>
+                <Text style={styles.formLabel}>Email*</Text>
                 <TextInput
-                    style={styles.formInputEmail}
+                    style={styles.formInput}
                     placeholder='johndee@gmail.com'
                     value={formData.email}
                     onChangeText={(value) => handleChange('email', value)}
-                    accessibilityLabel="Email"
                 />
             </View>
             <View style={styles.formContainer}>
-                <Text style={styles.formLabel}>Password</Text>
+                <Text style={styles.formLabel}>Password*</Text>
                 <View style={styles.passwordContainer}>
                     <TextInput
                         style={styles.formInputPassword}
                         secureTextEntry={!showPassword}
-                        placeholder='password'
+                        placeholder='Password'
                         value={formData.password}
                         onChangeText={(value) => handleChange('password', value)}
-                        accessibilityLabel="Password"
                     />
-                    <TouchableOpacity>
+                    <TouchableOpacity onPress={() => setShowPassword(!showPassword)} activeOpacity={0.7}>
                         <Feather
                             name={showPassword ? "eye-off" : "eye"}
                             size={24}
-                            onPress={() => setShowPassword(!showPassword)}
                             style={styles.eyeIcon}
                         />
                     </TouchableOpacity>
@@ -111,7 +103,6 @@ export default function Login() {
                     onPress={handleSignIn}
                     color='#3D7B3F'
                     title="Sign In"
-                    accessibilityLabel='Sign In'
                 />
                 <Text style={styles.textRegister}>
                     Don't have an account?{` `}
@@ -119,16 +110,15 @@ export default function Login() {
                         style={styles.linkRegister} href="/Register">Sign up for free</Link>
                 </Text>
             </View>
-            <ModalPopUp
-                visible={modalVisible}>
+            <ModalPopUp visible={modalVisible}>
                 <View style={styles.modalBackground}>
                     <Feather
-                        name="check-circle"
+                        name={modalMessage.startsWith('Login Successful') ? "check-circle" : "x-circle"}
                         size={32}
-                        color="#3D7B3F"
-
+                        color={modalMessage.startsWith('Login Successful') ? "#3D7B3F" : 'red'}
+                        style={styles.modalIcon}
                     />
-                    <Text style={styles.formLabel}>Login Success!</Text>
+                    <Text style={styles.modalText}>{modalMessage}</Text>
                 </View>
             </ModalPopUp>
         </View>
@@ -156,12 +146,12 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         borderWidth: 1,
     },
-    formInputEmail: {
-        padding: 10,
-        borderWidth: 1,
-    },
     eyeIcon: {
         right: 10,
+    },
+    formInput: {
+        borderWidth: 1,
+        padding: 10,
     },
     formInputPassword: {
         padding: 10,
@@ -187,5 +177,15 @@ const styles = StyleSheet.create({
         elevation: 20,
         borderRadius: 4,
         padding: 20,
+        alignItems: 'center',
+    },
+    modalIcon: {
+        alignItems: 'center',
+    },
+    modalText: {
+        fontSize: 16,
+        color: '#000000',
+        textAlign: 'center',
+        marginTop: 10,
     },
 });

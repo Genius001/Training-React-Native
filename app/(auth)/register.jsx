@@ -1,82 +1,115 @@
 import {
     View, Text, Image, TextInput,
-    Button, StyleSheet, Alert, TouchableOpacity
+    Button, StyleSheet, TouchableOpacity
 } from 'react-native';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, router } from 'expo-router';
 import ModalPopUp from '../../components/Modal';
 import { Feather } from '@expo/vector-icons';
+import { useDispatch, useSelector } from 'react-redux';
+import { registerUser } from '@/redux/reducers/auth/authApi';
+import { selectAuth } from '@/redux/reducers/auth/authSlice';
 
 export default function Register() {
     const [modalVisible, setModalVisible] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [errorMessage, setErrorMessage] = useState(null);
+    const [successMessage, setSuccessMessage] = useState(null);
     const [formData, setFormData] = useState({
+        name: '',
         email: '',
         password: '',
     });
 
+    const dispatch = useDispatch();
+    const authState = useSelector(selectAuth);
+
+    useEffect(() => {
+        let timeout;
+
+        console.log('authState:', authState);
+
+        if (authState.error) {
+            console.log('Error detected:', authState.error);
+            setErrorMessage(authState.error);
+            setSuccessMessage(null);
+            setModalVisible(true);
+            timeout = setTimeout(() => {
+                setModalVisible(false);
+                setErrorMessage(null);
+            }, 2000);
+        } else if (authState.user) {
+            console.log('User registered successfully:', authState.user);
+            setErrorMessage(null);
+            setSuccessMessage('Register Successfully!');
+            setModalVisible(true);
+            timeout = setTimeout(() => {
+                setModalVisible(false);
+                setSuccessMessage(null);
+                router.navigate('/Login');
+            }, 2000);
+        }
+
+        return () => clearTimeout(timeout);
+    }, [authState]);
+
     const handleChange = (name, value) => {
-        setFormData({ ...formData, [name]: value });
+        setFormData(prevData => ({ ...prevData, [name]: value }));
     };
 
     const handleSignUp = async () => {
-        const { email, password } = formData;
+        const { name, email, password } = formData;
 
-        console.log('Form Data:', formData);
-
-        if (!email || !password) {
-            Alert.alert('Error', 'Please fill out all fields.');
+        if (!name || !email || !password) {
+            showModal('Please fill out all fields.');
             return;
         }
         if (!email.includes('@')) {
-            Alert.alert('Error', 'Please enter a valid email address.');
+            showModal('Please enter a valid email address.');
             return;
         }
         if (password.length < 6) {
-            Alert.alert('Error', 'Password must be at least 6 characters long.');
+            showModal('Password must be at least 6 characters long.');
             return;
         }
         if (password.includes(' ')) {
-            Alert.alert('Error', 'Password cannot contain spaces.');
+            showModal('Password cannot contain spaces.');
             return;
         }
         const specialCharPattern = /[!@#$%^&*(),.?":{}|<>]/;
         if (!specialCharPattern.test(password)) {
-            Alert.alert('Error', 'Password must contain at least one special character.');
+            showModal('Password must contain at least one special character.');
             return;
         }
 
         try {
-            const response = await
-                fetch('https://api-car-rental.binaracademy.org/customer/auth/register', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        email: formData.email,
-                        password: formData.password,
-                        role: 'Customer',
-                    }),
-                });
-
-            const body = await response.json();
-            if (!response.ok) throw new Error(body.message || body.errors[0].message || "Something Went Wrong!")
-            setModalVisible(true)
+            console.log('Dispatching registerUser with:', { name, email, password });
+            await dispatch(registerUser({ name, email, password })).unwrap();
+            setFormData({ name: '', email: '', password: '' });
+            setErrorMessage(null);
+            setSuccessMessage('Register Successfully!');
+            setModalVisible(true);
             setTimeout(() => {
-                setModalVisible(false)
-                router.navigate('/Login')
-            }, 1000)
+                setModalVisible(false);
+                setSuccessMessage(null);
+                router.navigate('/Login');
+            }, 2000);
         } catch (e) {
-            setErrorMessage(e.message)
-            setModalVisible(true)
-            setTimeout(() => {
-                setModalVisible(false)
-                setErrorMessage(null)
-            }, 3000)
+            console.error('Registration failed:', e.message);
+            showModal(e.message);
         }
-    }
+    };
+
+    const showModal = (message) => {
+        console.log('Showing modal with message:', message);
+        setErrorMessage(message);
+        setSuccessMessage(null);
+        setModalVisible(true);
+        setTimeout(() => {
+            setModalVisible(false);
+            setErrorMessage(null);
+        }, 2000);
+    };
 
     return (
         <View>
@@ -86,17 +119,18 @@ export default function Register() {
                 <Text style={styles.formLabel}>Name*</Text>
                 <TextInput
                     style={styles.formInput}
-                    placeholder='name' />
-                <View />
-
-                <View style={styles.formContainer}></View>
+                    placeholder='Full Name'
+                    value={formData.name}
+                    onChangeText={(value) => handleChange('name', value)}
+                />
+            </View>
+            <View style={styles.formContainer}>
                 <Text style={styles.formLabel}>Email*</Text>
                 <TextInput
                     style={styles.formInput}
                     placeholder='johndee@gmail.com'
                     value={formData.email}
                     onChangeText={(value) => handleChange('email', value)}
-                    accessibilityLabel="Email"
                 />
             </View>
             <View style={styles.formContainer}>
@@ -105,17 +139,15 @@ export default function Register() {
                     <TextInput
                         style={styles.formInputPassword}
                         secureTextEntry={!showPassword}
-                        placeholder='password'
+                        placeholder='Password'
                         value={formData.password}
                         onChangeText={(value) => handleChange('password', value)}
-                        accessibilityLabel="Password"
                         autoCapitalize='none'
                     />
-                    <TouchableOpacity>
+                    <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
                         <Feather
                             name={showPassword ? "eye-off" : "eye"}
                             size={24}
-                            onPress={() => setShowPassword(!showPassword)}
                             style={styles.eyeIcon}
                         />
                     </TouchableOpacity>
@@ -123,10 +155,9 @@ export default function Register() {
             </View>
             <View style={styles.formContainer}>
                 <Button
-                    onPress={() => handleSignUp()}
+                    onPress={handleSignUp}
                     color='#3D7B3F'
                     title="Sign Up"
-                    accessibilityLabel='Sign Up'
                 />
                 <Text style={styles.textLogin}>
                     Already have an account?{` `}
@@ -137,15 +168,15 @@ export default function Register() {
             </View>
             <ModalPopUp visible={modalVisible}>
                 <View style={styles.modalBackground}>
-                    {errorMessage !== null ?
+                    {errorMessage ?
                         <>
-                            <Feather size={32} name={'x-circle'} color={'#3D7B3F'} style={{ alignItems: 'center' }} />
-                            <Text>{errorMessage}</Text>
+                            <Feather size={32} name={'x-circle'} color={'red'} style={styles.modalIcon} />
+                            <Text style={styles.modalText}>{errorMessage}</Text>
                         </>
                         :
                         <>
-                            <Feather size={32} name={'check-circle'} color={'#3D7B3F'} style={{ alignItems: 'center' }} />
-                            <Text>Register Successfully!</Text>
+                            <Feather size={32} name={'check-circle'} color={'#3D7B3F'} style={styles.modalIcon} />
+                            <Text style={styles.modalText}>{successMessage}</Text>
                         </>
                     }
                 </View>
@@ -206,5 +237,15 @@ const styles = StyleSheet.create({
         elevation: 20,
         borderRadius: 4,
         padding: 20,
+        alignItems: 'center',
+    },
+    modalIcon: {
+        alignItems: 'center',
+    },
+    modalText: {
+        fontSize: 16,
+        color: '#000000',
+        textAlign: 'center',
+        marginTop: 10,
     },
 });

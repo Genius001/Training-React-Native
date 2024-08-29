@@ -10,23 +10,53 @@ import React from "react";
 import * as SecureStore from "expo-secure-store";
 import { useSelector, useDispatch } from "react-redux";
 import { getCar, selectCar } from '../../redux/reducers/car/carSlice';
+import { selectAuth } from '../../redux/reducers/auth/authSlice'; // Import auth slice
+import * as Location from 'expo-location'; // Import expo-location
 
 export default function HomeScreen() {
-
   const { data, isLoading } = useSelector(selectCar);
+  const { isAuthenticated, user } = useSelector(selectAuth); // Access auth state
+  const [location, setLocation] = useState(null);
+  const [locationError, setLocationError] = useState(null);
+  const [city, setCity] = useState(''); // For city name
   const dispatch = useDispatch();
 
   useEffect(() => {
-    const controller = new AbortController(); // UseEffect cleanup untuk menghindari memory Leak
+    const fetchLocation = async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        setLocationError('Permission to access location was denied');
+        return;
+      }
+
+      let location = await Location.getCurrentPositionAsync({});
+      setLocation(location.coords);
+
+      // Reverse geocoding
+      let [reverseGeocodedLocation] = await Location.reverseGeocodeAsync(location.coords);
+      if (reverseGeocodedLocation) {
+        setCity(reverseGeocodedLocation.city || reverseGeocodedLocation.region || 'Unknown location');
+        console.log(reverseGeocodedLocation);
+      }
+    };
+
+    fetchLocation();
+
+    const controller = new AbortController(); // UseEffect cleanup to avoid memory leaks
     const signal = controller.signal; // UseEffect cleanup
 
     dispatch(getCar(signal));
 
     return () => {
-      // cancel request sebelum component di close
+      // Cancel request before component is unmounted
       controller.abort();
     };
   }, []);
+
+  // Location text
+  const locationText = location
+    ? city
+    : locationError || 'Fetching location...';
 
   return (
     <ParallaxFlatList
@@ -34,8 +64,8 @@ export default function HomeScreen() {
       headerImage={
         <View style={styles.container}>
           <View>
-            <Text style={styles.titleText}>Hi, Nama</Text>
-            <Text style={styles.titleText}>Location</Text>
+            <Text style={styles.titleText}>Hi, {isAuthenticated ? user?.email : 'Guest'}</Text>
+            <Text style={styles.titleText}>{locationText}</Text>
           </View>
           <View>
             <Image
@@ -65,7 +95,6 @@ export default function HomeScreen() {
               <Col>
                 <ButtonIcon name={'truck'} color={'#ffffff'}></ButtonIcon>
                 <Text style={styles.iconText}>Sewa Mobil</Text>
-
               </Col>
               <Col>
                 <ButtonIcon name={'box'} color={'#ffffff'}></ButtonIcon>
