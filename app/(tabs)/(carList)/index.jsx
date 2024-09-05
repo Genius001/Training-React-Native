@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
     View,
     Text,
@@ -28,8 +28,9 @@ export default function CarList() {
         };
     }, []);
 
-    const renderCar = ({ item }) => (
-        <ListCar
+    const renderCar = useCallback(({ item }) => {
+        return <ListCar
+            key={item.id}
             image={{ uri: item.image }}
             carName={item.name}
             passengers={item.passengers || 5}
@@ -37,7 +38,7 @@ export default function CarList() {
             onPress={() => router.push(`(carList)/details/${item.id}`)}
             price={item.price}
         />
-    );
+    })
 
     return (
         <SafeAreaView style={styles.safeArea}>
@@ -51,7 +52,6 @@ export default function CarList() {
                     <FlatList
                         data={data}
                         renderItem={renderCar}
-                        keyExtractor={item => item.id.toString()}
                         ListHeaderComponent={<View style={{ height: 20 }} />}
                     />
                 ) : (

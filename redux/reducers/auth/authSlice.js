@@ -3,9 +3,9 @@ import { fetchAuth, registerUser } from './authApi';
 import * as SecureStore from 'expo-secure-store';
 
 // Async function to get stored auth data
-const getStore = async () => {
-    const data = await SecureStore.getItemAsync('auth');
-    return data ? JSON.parse(data) : null;
+const getStoredAuth = async () => {
+    const authData = await SecureStore.getItemAsync('auth');
+    return authData ? JSON.parse(authData) : null;
 };
 
 // Async function to set auth data
@@ -14,69 +14,72 @@ const setStore = async (data) => {
 };
 
 const initialState = {
-    user: null,
-    isAuthenticated: false,
+    isLoading: false,
+    user: {}, // Initial empty user object
     isModalVisible: false,
-    loading: false,
-    error: null,
-    data: null,
+    isAuthenticated: false,
+    error: false,
+    errorMessage: null,
 };
-
-// Async initialization function to set initial state
-const initializeAuth = async () => {
-    const storedData = await getStore();
-    if (storedData) {
-        initialState.user = storedData;
-        initialState.isAuthenticated = true;
-    }
-};
-
-initializeAuth();
 
 const authSlice = createSlice({
     name: 'auth',
     initialState,
     reducers: {
+        setUser: (state, action) => {
+            state.user = action.payload;
+            state.isAuthenticated = true;
+        },
         logout: (state) => {
             state.isAuthenticated = false;
-            state.user = null;
+            state.user = {};
             SecureStore.deleteItemAsync('auth');
         },
     },
     extraReducers: (builder) => {
         builder
             .addCase(fetchAuth.pending, (state) => {
-                state.loading = true;
+                state.isLoading = true;
                 state.error = null;
             })
             .addCase(fetchAuth.fulfilled, (state, action) => {
-                state.loading = false;
+                state.isLoading = false;
                 state.isAuthenticated = true;
                 state.user = action.payload;
                 setStore(action.payload); // Store user data in SecureStore
+                state.isModalVisible = true;
             })
             .addCase(fetchAuth.rejected, (state, action) => {
-                state.loading = false;
+                state.isLoading = false;
                 state.error = action.payload?.message || 'An error occurred during login';
+                state.isModalVisible = true;
             })
             .addCase(registerUser.pending, (state) => {
-                state.loading = true;
+                state.isLoading = true;
                 state.error = null;
             })
             .addCase(registerUser.fulfilled, (state, action) => {
-                state.loading = false;
+                state.isLoading = false;
                 state.isAuthenticated = true;
                 state.user = action.payload;
                 setStore(action.payload); // Store user data in SecureStore
             })
             .addCase(registerUser.rejected, (state, action) => {
-                state.loading = false;
+                state.isLoading = false;
                 state.error = action.payload?.message || 'An error occurred during registration';
             });
     },
 });
 
-export const { logout } = authSlice.actions;
+export const { setUser, logout } = authSlice.actions;
 
 export const selectAuth = (state) => state.auth;
+
+export const initializeAuth = () => async (dispatch) => {
+    const storedAuth = await getStoredAuth();
+    if (storedAuth) {
+        dispatch(setUser(storedAuth));
+    }
+};
+
 export default authSlice.reducer;

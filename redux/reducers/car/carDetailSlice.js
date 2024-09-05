@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { fetchCarDetail } from "./carApi";
+import { isLoading } from "expo-font";
 
 const carDetailSlice = createSlice({
     name: "carDetail",
@@ -8,6 +9,11 @@ const carDetailSlice = createSlice({
         data: {},
         isError: false,
         errorMessage: null,
+    },
+    reducers: {
+        closeDetail: (state) => {
+            state.data = {};
+        }
     },
     extraReducers: (builder) => {
         builder
@@ -29,5 +35,6 @@ const carDetailSlice = createSlice({
 });
 
 export const getCarDetail = fetchCarDetail;
+export const { closeDetail } = carDetailSlice.actions;
 export const selectCarDetail = (state) => state.carDetail;
 export default carDetailSlice.reducer;

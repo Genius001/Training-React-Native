@@ -32,9 +32,10 @@ export default function TabLayout() {
         name="(carList)"
         options={{
           title: "Daftar Mobil",
+          href: "/(carList)",
           tabBarStyle: {
-            display: segments.includes('details') ? 
-            'none' : 'flex'
+            display: segments.includes('details') ?
+              'none' : 'flex'
           },
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon

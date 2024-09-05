@@ -4,16 +4,17 @@ import {
     ScrollView,
     Image,
     StyleSheet,
-    Button,
     ActivityIndicator,
     TouchableOpacity,
 } from "react-native";
 import React, { useEffect } from "react";
-import { useLocalSearchParams, useNavigation } from "expo-router";
+import { router, useLocalSearchParams, useNavigation } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import { Col, Row } from "@/components/Grid";
 import { getCarDetail, selectCarDetail } from "@/redux/reducers/car/carDetailSlice";
 import { useSelector, useDispatch } from "react-redux";
+import { setCarId } from "@/redux/reducers/order/orderSlice";
+import Button from "@/components/Button";
 
 const formatCurrency = new Intl.NumberFormat("id-ID", {
     style: "currency",
@@ -45,6 +46,7 @@ export default function DetailScreen() {
         const signal = controller.signal;
 
         dispatch(getCarDetail({ id, signal }));
+        dispatch(setCarId(id));
 
         return () => {
             controller.abort();
@@ -61,12 +63,12 @@ export default function DetailScreen() {
 
     return (
         <View style={styles.container}>
-            <TouchableOpacity
-                style={styles.backButton}
-                onPress={() => navigation.goBack()}
-            >
+            <Button style={styles.backButton} onPress={() => {
+                dispatch(closeDetails())
+                router.back()
+            }}>
                 <Feather name="arrow-left" size={24} color="#000" />
-            </TouchableOpacity>
+            </Button>
 
             <View style={styles.header}>
                 <Text style={styles.carName}>{data.name}</Text>
@@ -115,7 +117,10 @@ export default function DetailScreen() {
 
             <View style={styles.footer}>
                 <Text style={styles.price}>{formatCurrency.format(data.price)}</Text>
-                <Button color="#3D7B3F" title="Lanjutkan Pembayaran" accessibilityLabel="Proceed to Payment" />
+                <Button color="#3D7B3F" title="Lanjutkan Pembayaran" accessibilityLabel="Proceed to Payment" onPress={() => {
+                    dispatch(setCarId(id))
+                    router.navigate("Payment")
+                }} />
             </View>
         </View>
     );

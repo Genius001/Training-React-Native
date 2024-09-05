@@ -4,7 +4,7 @@ import Constants from "expo-constants";
 import { Row, Col } from '@/components/Grid';
 import ButtonIcon from './../../components/ButtonIcon';
 import ListCar from './../../components/ListCar';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { router } from "expo-router";
 import React from "react";
 import * as SecureStore from "expo-secure-store";
@@ -15,10 +15,10 @@ import * as Location from 'expo-location'; // Import expo-location
 
 export default function HomeScreen() {
   const { data, isLoading } = useSelector(selectCar);
-  const { isAuthenticated, user } = useSelector(selectAuth); // Access auth state
+  const { isAuthenticated, user } = useSelector(selectAuth);
   const [location, setLocation] = useState(null);
   const [locationError, setLocationError] = useState(null);
-  const [city, setCity] = useState(''); // For city name
+  const [city, setCity] = useState('');
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -57,6 +57,21 @@ export default function HomeScreen() {
   const locationText = location
     ? city
     : locationError || 'Fetching location...';
+
+  const renderItem = useCallback(({ item }) => (
+    <ListCar
+      style={{ marginHorizontal: 20 }}
+      key={item.id}
+      image={{ uri: item.image }}
+      carName={item.name}
+      passengers={item.passengers || 5}
+      baggage={item.baggage || 4}
+      price={item.price}
+      onPress={() =>
+        router.push('(carList)/details/' + item.id)
+      }
+    />
+  ), []);
 
   return (
     <ParallaxFlatList
@@ -115,20 +130,7 @@ export default function HomeScreen() {
       loading={isLoading}
       data={data}
       keyExtractor={(item) => item.id.toString()}
-      renderItem={({ item }) => (
-        <ListCar
-          style={{ marginHorizontal: 20 }}
-          key={item.id}
-          image={{ uri: item.image }}
-          carName={item.name}
-          passengers={item.passengers || 5}
-          baggage={item.baggage || 4}
-          price={item.price}
-          onPress={() =>
-            router.push('(carList)/details/' + item.id)
-          }
-        />
-      )}
+      renderItem={renderItem}
       viewabilityConfig={{
         waitForInteraction: true,
       }}
