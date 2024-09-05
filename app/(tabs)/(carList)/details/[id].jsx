@@ -1,221 +1,225 @@
 import {
-    View,
-    Text,
-    ScrollView,
-    Image,
-    StyleSheet,
-    ActivityIndicator,
-    TouchableOpacity,
+  View,
+  Text,
+  ScrollView,
+  Image,
+  StyleSheet,
+  ActivityIndicator,
 } from "react-native";
-import React, { useEffect } from "react";
-import { router, useLocalSearchParams, useNavigation } from "expo-router";
+import React, { useState, useEffect, useCallback } from "react";
+import { useLocalSearchParams, router, useFocusEffect } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import { Col, Row } from "@/components/Grid";
-import { getCarDetail, selectCarDetail } from "@/redux/reducers/car/carDetailSlice";
+import { getCarDetail, selectCarDetail, closeDetail } from "@/redux/reducers/car/carDetailSlice";
 import { useSelector, useDispatch } from "react-redux";
-import { setCarId } from "@/redux/reducers/order/orderSlice";
 import Button from "@/components/Button";
+import Markdown from "react-native-markdown-display";
+import { normalize } from "@/utils/normalize";
+import { setCarId, resetState } from "@/redux/reducers/order/orderSlice";
+
 
 const formatCurrency = new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
+  style: "currency",
+  currency: "IDR",
 });
 
 const include = [
-    { key: "Apa saja yang termasuk dalam paket misal durasi max 12 jam" },
-    { key: "Sudah termasuk bensin selama 12 jam" },
-    { key: "Sudah termasuk Tiket Wisata" },
-    { key: "Sudah termasuk pajak" },
+  { key: "Apa saja yang termasuk dalam paket misal durasi max 12 jam" },
+  { key: "Sudah termasuk bensin selama 12 jam" },
+  { key: "Sudah termasuk Tiket Wisata" },
+  { key: "Sudah termasuk pajak" },
 ];
 
 const exclude = [
-    { key: "Tidak termasuk biaya makan sopir Rp 75.000/hari" },
-    { key: "Jika overtime lebih dari 12 jam akan ada tambahan biaya Rp 20.000/jam" },
-    { key: "Tidak termasuk akomodasi penginapan" },
+  { key: "Tidak termasuk biaya makan sopir Rp 75.000/hari" },
+  { key: "Jika overtime lebih dari 12 jam akan ada tambahan biaya Rp 20.000/jam" },
+  { key: "Tidak termasuk akomodasi penginapan" },
 ];
 
 export default function DetailScreen() {
-    const { id } = useLocalSearchParams();
-    const dispatch = useDispatch();
-    const navigation = useNavigation();
+  const { id } = useLocalSearchParams();
+  const { data, isLoading, isError } = useSelector(selectCarDetail);
+  const dispatch = useDispatch();
+  const formatIDR = useCallback((price) => formatCurrency.format(price), []);
 
-    const { data, isLoading, isError } = useSelector(selectCarDetail);
+  useFocusEffect(
+    useCallback(() => {
+      const controller = new AbortController(); // UseEffect cleanup untuk menghindari memory Leak
+      const signal = controller.signal; // UseEffect cleanup
 
-    useEffect(() => {
-        const controller = new AbortController();
-        const signal = controller.signal;
+      dispatch(getCarDetail({ id, signal }));
+      dispatch(setCarId(id))
 
-        dispatch(getCarDetail({ id, signal }));
-        dispatch(setCarId(id));
+      return () => {
+        controller.abort();
+        // dispatch(closeDetails());
+      };
+    }, [id])
+  );
+  // if(isLoading) return <ActivityIndicator/>
+  if (isLoading) {
+    return <ActivityIndicator size="large" color="#0000ff" style={styles.loading} />;
+  }
 
-        return () => {
-            controller.abort();
-        };
-    }, [id, dispatch]);
+  if (isError || !data) {
+    return <Text style={styles.errorText}>Failed to load car details. Please try again later.</Text>;
+  }
 
-    if (isLoading) {
-        return <ActivityIndicator size="large" color="#0000ff" style={styles.loading} />;
-    }
+  return (
+    <View style={styles.container}>
+      <Button style={styles.backButton} onPress={() => {
+        dispatch(closeDetail())
+        router.back()
+      }}>
+        <Feather name="arrow-left" size={24} color="#000" />
+      </Button>
 
-    if (isError || !data) {
-        return <Text style={styles.errorText}>Failed to load car details. Please try again later.</Text>;
-    }
+      <View style={styles.header}>
+        <Text style={styles.carName}>{data.name}</Text>
+        <Row style={styles.icon}>
+          <Col style={styles.textIcon}>
+            <Feather size={24} name={"users"} color={"#8A8A8A"} />
+            <Text style={styles.capacityText}>{data.passengers || 5}</Text>
+          </Col>
+          <Col style={styles.textIcon}>
+            <Feather size={24} name={"briefcase"} color={"#8A8A8A"} />
+            <Text style={styles.capacityText}>{data.baggages || 2}</Text>
+          </Col>
+        </Row>
+        {data.image ? (
+          <Image
+            source={{ uri: data.image }}
+            style={styles.img}
+            accessibilityLabel={`Image of ${data.name}`}
+          />
+        ) : (
+          <Text style={styles.errorText}>Image not available</Text>
+        )}
+      </View>
 
-    return (
-        <View style={styles.container}>
-            <Button style={styles.backButton} onPress={() => {
-                dispatch(closeDetails())
-                router.back()
-            }}>
-                <Feather name="arrow-left" size={24} color="#000" />
-            </Button>
-
-            <View style={styles.header}>
-                <Text style={styles.carName}>{data.name}</Text>
-                <Row style={styles.icon}>
-                    <Col style={styles.textIcon}>
-                        <Feather size={24} name={"users"} color={"#8A8A8A"} />
-                        <Text style={styles.capacityText}>{data.passengers || 5}</Text>
-                    </Col>
-                    <Col style={styles.textIcon}>
-                        <Feather size={24} name={"briefcase"} color={"#8A8A8A"} />
-                        <Text style={styles.capacityText}>{data.baggages || 2}</Text>
-                    </Col>
-                </Row>
-                {data.image ? (
-                    <Image
-                        source={{ uri: data.image }}
-                        style={styles.img}
-                        accessibilityLabel={`Image of ${data.name}`}
-                    />
-                ) : (
-                    <Text style={styles.errorText}>Image not available</Text>
-                )}
+      <ScrollView contentContainerStyle={styles.scrollViewContent}>
+        <View style={styles.containerText}>
+          <Text style={styles.text}>Tentang Paket</Text>
+          <View>
+            <Text style={styles.text}>Include</Text>
+            <View>
+              {include.map((item, index) => (
+                <Text key={index} style={styles.textIsi}>{`\u2022 ${item.key}`}</Text>
+              ))}
             </View>
-
-            <ScrollView contentContainerStyle={styles.scrollViewContent}>
-                <View style={styles.containerText}>
-                    <Text style={styles.text}>Tentang Paket</Text>
-                    <View>
-                        <Text style={styles.text}>Include</Text>
-                        <View>
-                            {include.map((item, index) => (
-                                <Text key={index} style={styles.textIsi}>{`\u2022 ${item.key}`}</Text>
-                            ))}
-                        </View>
-                    </View>
-                    <View>
-                        <Text style={styles.text}>Exclude</Text>
-                        <View>
-                            {exclude.map((item, index) => (
-                                <Text key={index} style={styles.textIsi}>{`\u2022 ${item.key}`}</Text>
-                            ))}
-                        </View>
-                    </View>
-                </View>
-            </ScrollView>
-
-            <View style={styles.footer}>
-                <Text style={styles.price}>{formatCurrency.format(data.price)}</Text>
-                <Button color="#3D7B3F" title="Lanjutkan Pembayaran" accessibilityLabel="Proceed to Payment" onPress={() => {
-                    dispatch(setCarId(id))
-                    router.navigate("Payment")
-                }} />
+          </View>
+          <View>
+            <Text style={styles.text}>Exclude</Text>
+            <View>
+              {exclude.map((item, index) => (
+                <Text key={index} style={styles.textIsi}>{`\u2022 ${item.key}`}</Text>
+              ))}
             </View>
+          </View>
         </View>
-    );
+      </ScrollView>
+
+      <View style={styles.footer}>
+        <Text style={styles.price}>{formatCurrency.format(data.price)}</Text>
+        <Button color="#3D7B3F" title="Lanjutkan Pembayaran" accessibilityLabel="Proceed to Payment" onPress={() => {
+          dispatch(setCarId(id))
+          router.navigate("Payment")
+        }} />
+      </View>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-    },
-    backButton: {
-        position: 'absolute',
-        top: 40,
-        left: 20,
-        zIndex: 10,
-    },
-    header: {
-        alignItems: "center",
-        padding: 15,
-        backgroundColor: "#fff",
-        borderBottomWidth: 1,
-        borderBottomColor: "#ddd",
-    },
-    scrollViewContent: {
-        padding: 15,
-        flexGrow: 1,
-    },
-    loading: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    errorText: {
-        color: 'red',
-        fontSize: 16,
-        textAlign: 'center',
-        marginTop: 20,
-    },
-    carName: {
-        fontFamily: "PoppinsBold",
-        fontSize: 20,
-        marginBottom: 10,
-        textAlign: "center",
-    },
-    capacityText: {
-        color: "#8A8A8A",
-        fontSize: 16,
-        fontFamily: "PoppinsBold",
-    },
-    icon: {
-        alignItems: "center",
-        justifyContent: "center",
-        marginBottom: 20,
-    },
-    textIcon: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 2,
-        margin: 5,
-    },
-    img: {
-        width: "100%",
-        height: 200,
-        borderRadius: 10,
-        marginBottom: 20,
-        marginTop: 20,
-        resizeMode: "contain",
-    },
-    containerText: {
-        paddingTop: 20,
-        paddingHorizontal: 20,
-        backgroundColor: "#fff",
-        borderRadius: 10,
-        shadowColor: "#000",
-        shadowRadius: 3,
-        shadowOpacity: 0.1,
-        shadowOffset: { width: 0, height: 1 },
-        marginBottom: 20,
-    },
-    text: {
-        fontFamily: "PoppinsBold",
-        fontSize: 16,
-    },
-    textIsi: {
-        fontFamily: "PoppinsBold",
-        fontSize: 16,
-        color: "#8A8A8A",
-        padding: 5,
-    },
-    price: {
-        fontFamily: "PoppinsBold",
-        fontSize: 16,
-        marginBottom: 20,
-    },
-    footer: {
-        backgroundColor: "#eeeeee",
-        padding: 20,
-    },
+  container: {
+    flex: 1,
+  },
+  backButton: {
+    position: 'absolute',
+    top: 40,
+    left: 20,
+    zIndex: 10,
+  },
+  header: {
+    alignItems: "center",
+    padding: 15,
+    backgroundColor: "#fff",
+    borderBottomWidth: 1,
+    borderBottomColor: "#ddd",
+  },
+  scrollViewContent: {
+    padding: 15,
+    flexGrow: 1,
+  },
+  loading: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 16,
+    textAlign: 'center',
+    marginTop: 20,
+  },
+  carName: {
+    fontFamily: "PoppinsBold",
+    fontSize: 20,
+    marginBottom: 10,
+    textAlign: "center",
+  },
+  capacityText: {
+    color: "#8A8A8A",
+    fontSize: 16,
+    fontFamily: "PoppinsBold",
+  },
+  icon: {
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 20,
+  },
+  textIcon: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 2,
+    margin: 5,
+  },
+  img: {
+    width: "100%",
+    height: 200,
+    borderRadius: 10,
+    marginBottom: 20,
+    marginTop: 20,
+    resizeMode: "contain",
+  },
+  containerText: {
+    paddingTop: 20,
+    paddingHorizontal: 20,
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    shadowColor: "#000",
+    shadowRadius: 3,
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 1 },
+    marginBottom: 20,
+  },
+  text: {
+    fontFamily: "PoppinsBold",
+    fontSize: 16,
+  },
+  textIsi: {
+    fontFamily: "PoppinsBold",
+    fontSize: 16,
+    color: "#8A8A8A",
+    padding: 5,
+  },
+  price: {
+    fontFamily: "PoppinsBold",
+    fontSize: 16,
+    marginBottom: 20,
+  },
+  footer: {
+    backgroundColor: "#eeeeee",
+    padding: 20,
+  },
 });

@@ -1,95 +1,168 @@
-import { useSelector } from "react-redux";
-import { View, Text, TextInput, StyleSheet } from "react-native";
+import { useSelector, useDispatch } from "react-redux";
+import { View, Text, TextInput, StyleSheet, Pressable } from "react-native";
 import ListCar from "@/components/ListCar";
 import Button from "@/components/Button";
-import { selectOrder } from "@/redux/reducers/order/orderSlice";
+import { selectOrder, setStateByName } from "@/redux/reducers/order/orderSlice";
 import { selectCarDetail } from "@/redux/reducers/car/carDetailSlice";
 import { useCallback, useState } from "react";
 import { Feather } from "@expo/vector-icons";
 
-const formatCurrency = new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-})
 const paymentMethods = [
-    "BCA", "MANDIRI", "BNI"
-]
+  { bankName: "BCA", account: 12345678, name: "a. n Super Travel" },
+  { bankName: "MANDIRI", account: 12345678, name: "a. n Super Travel" },
+  { bankName: "BNI", account: 12345678, name: "a. n Super Travel" },
+];
 export default function step1({ setActivityStep }) {
-    const [selectMethod, setSelectMethod] = useState(null);
-    const { carId } = useSelector(selectOrder);
-    const { data } = useSelector(selectCarDetail);
-    const formatIDR = useCallback((price) => formatCurrency.format(price), []);
-    return (
-        <View style={styles.container}>
-            <ListCar
-                image={{ uri: data?.image }}
-                carName={data?.name}
-                passengers={data?.passengers || 5}
-                baggage={data?.baggage || 2}
-                price={data?.price}
-
-            />
-            <Text style={styles.textBold}>Pilih Bank Transfer</Text>R
-            <Text style={styles.textBold}>
-                Kamu bisa membayar dengan transfer melalui ATM, Internet Banking atau
-                Mobile Banking
-            </Text>
-            <View>
-                {paymentMethods.map((e) => (
-                    <Button
-                        key={e}
-                        style={styles.paymentMethod}
-                        onPress={() => setSelectMethod(e)}
-                    >
-                        <Text style={styles.paymentBox}>{e}</Text>
-                        <Text style={styles.paymentText}>{e} Transfer</Text>
-                        {selectMethod === e && <Feather size={20} name="check" color={"#3D7B3F"} />}
-                    </Button>
-                ))}
-
-            </View>
-            <View>
-                <Text>% Pakai Kode Promo</Text>
-                <View>
-                    <TextInput placeholder="Tulis promomu disini" />
-                    <Button title={"Terapkan"} />
-                </View>
-            </View>
-            <View style={styles.footer}>
-                <Text style={styles.price}>{formatIDR(data.price || 0)}</Text>
-                <Button
-                    disabled={true}
-                    color="#3D7B3F"
-                    onPress={() => {
-                        setActiveStep(1)
-                    }}
-                    title="Lanjutkan Pembayaran"
+  const [promoText, setPromoText] = useState(null);
+  const { selectedBank, promo } = useSelector(selectOrder);
+  const { data } = useSelector(selectCarDetail);
+  const dispatch = useDispatch();
+  return (
+    <View style={{ flex: 1 }}>
+      <View style={styles.container}>
+        <ListCar
+          image={{ uri: data.image }}
+          carName={data.name}
+          passengers={5}
+          baggage={4}
+          price={data.price}
+        />
+        <Text style={styles.textBold}>Pilih Bank Transfer</Text>
+        <Text style={styles.textBold}>
+          Kamu bisa membayar dengan transfer melalui ATM, Internet Banking atau
+          Mobile Banking
+        </Text>
+        <View
+          style={{
+            marginBottom: 10,
+          }}
+        >
+          {paymentMethods.map((e) => (
+            <Button
+              key={e.bankName}
+              style={styles.paymentMethod}
+              onPress={() =>
+                dispatch(setStateByName({ name: "selectedBank", value: e }))
+              }
+            >
+              <Text style={styles.paymentBox}>{e.bankName}</Text>
+              <Text style={styles.paymentText}>{e.bankName} Transfer</Text>
+              {selectedBank?.bankName === e.bankName && (
+                <Feather
+                  style={styles.check}
+                  color={"#3D7B3F"}
+                  size={20}
+                  name={"check"}
                 />
-            </View>
+              )}
+            </Button>
+          ))}
         </View>
-    );
+        <View style={styles.promos}>
+          <Text style={styles.textBold}>% Pakai Kode Promo</Text>
+          <View style={styles.promosForm}>
+            {!promo ? (
+              <>
+                <TextInput
+                  style={styles.promoInput}
+                  onChangeText={(val) => setPromoText(val)}
+                  placeholder="Tulis promomu disini"
+                />
+                <Button
+                  style={styles.promoButton}
+                  onPress={() =>
+                    dispatch(
+                      setStateByName({
+                        name: "promo",
+                        value: promoText,
+                      })
+                    )
+                  }
+                  title={"Terapkan"}
+                  color="#3D7B3F"
+                />
+              </>
+            ) : (
+              <View style={styles.promoTextWrapper}>
+                <Text style={styles.promoText}>{promo}</Text>
+                <Pressable
+                  onPress={() =>
+                    dispatch(
+                      setStateByName({
+                        name: "promo",
+                        value: null,
+                      })
+                    )
+                  }
+                >
+                  <Feather
+                    style={styles.check}
+                    color={"#880808"}
+                    size={30}
+                    name={"x"}
+                  />
+                </Pressable>
+              </View>
+            )}
+          </View>
+        </View>
+      </View>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        paddingHorizontal: 20
-    },
-    textBold: {
-        fontFamily: 'PoppinsBold',
-        fontSize: 16,
-        marginBottom: 10
-    },
-    paymentMethod: {
-        flexDirection: "row",
-        alignItems: "flex-start",
-        padding: 20,
-        borderWidthBottom: 1,
-        borderColorBottom: '#D0D0D0'
-    },
-    paymentBox: {
-        borderWidth: 1,
-        paddingVertical: 10,
-        paddingHorizontal: 20,
-        borderColor: '#D0D0D0'
-    }
+  container: {
+    flex: 1,
+    paddingHorizontal: 20,
+  },
+  textBold: {
+    fontFamily: "PoppinsBold",
+    fontSize: 16,
+    marginBottom: 10,
+  },
+  paymentMethod: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 10,
+    borderWidthBottom: 1,
+    borderColorBottom: "#D0D0D0",
+  },
+  paymentBox: {
+    width: "30%",
+    textAlign: "center",
+    borderWidth: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderColor: "#D0D0D0",
+    marginRight: 10,
+  },
+  check: {
+    marginLeft: "auto",
+  },
+  promosForm: {
+    flexDirection: "row",
+    marginBottom: 10,
+  },
+  promoInput: {
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    borderColor: "#000",
+    width: "70%",
+  },
+  promoButton: {
+    width: "30%",
+    borderWidth: 1,
+    borderColor: "#3D7B3F",
+  },
+  promoTextWrapper: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  promoText: {
+    fontFamily: "PoppinsBold",
+    fontSize: 16,
+  },
 });

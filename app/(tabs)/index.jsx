@@ -11,52 +11,24 @@ import * as SecureStore from "expo-secure-store";
 import { useSelector, useDispatch } from "react-redux";
 import { getCar, selectCar } from '../../redux/reducers/car/carSlice';
 import { selectAuth } from '../../redux/reducers/auth/authSlice'; // Import auth slice
-import * as Location from 'expo-location'; // Import expo-location
+import GeoLocation from '../../components/Geolocation';
 
 export default function HomeScreen() {
   const { data, isLoading } = useSelector(selectCar);
   const { isAuthenticated, user } = useSelector(selectAuth);
-  const [location, setLocation] = useState(null);
-  const [locationError, setLocationError] = useState(null);
-  const [city, setCity] = useState('');
   const dispatch = useDispatch();
 
   useEffect(() => {
-    const fetchLocation = async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        setLocationError('Permission to access location was denied');
-        return;
-      }
+    const controller = new AbortController(); // UseEffect cleanup untuk menghindari memory Leak
+    const signal = controller.signal;  // UseEffect cleanup
 
-      let location = await Location.getCurrentPositionAsync({});
-      setLocation(location.coords);
-
-      // Reverse geocoding
-      let [reverseGeocodedLocation] = await Location.reverseGeocodeAsync(location.coords);
-      if (reverseGeocodedLocation) {
-        setCity(reverseGeocodedLocation.city || reverseGeocodedLocation.region || 'Unknown location');
-        console.log(reverseGeocodedLocation);
-      }
-    };
-
-    fetchLocation();
-
-    const controller = new AbortController(); // UseEffect cleanup to avoid memory leaks
-    const signal = controller.signal; // UseEffect cleanup
-
-    dispatch(getCar(signal));
+    dispatch(getCar(signal))
 
     return () => {
-      // Cancel request before component is unmounted
+      // cancel request sebelum component di close
       controller.abort();
     };
   }, []);
-
-  // Location text
-  const locationText = location
-    ? city
-    : locationError || 'Fetching location...';
 
   const renderItem = useCallback(({ item }) => (
     <ListCar
@@ -80,7 +52,7 @@ export default function HomeScreen() {
         <View style={styles.container}>
           <View>
             <Text style={styles.titleText}>Hi, {isAuthenticated ? user?.email : 'Guest'}</Text>
-            <Text style={styles.titleText}>{locationText}</Text>
+            <GeoLocation />
           </View>
           <View>
             <Image
