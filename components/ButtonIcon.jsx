@@ -4,20 +4,20 @@ import { Feather } from '@expo/vector-icons'
 
 
 export default function ButtonIcon(
-    { onPress, style, ...rest }
+  { onPress, style, ...rest }
 ) {
-    return (
-        <Pressable style={styles.box} onPress={onPress}>
-            <Feather size={32} style={style}{...rest} />
-        </Pressable>
-    )
+  return (
+    <Pressable style={styles.box} onPress={onPress}>
+      <Feather size={32} style={style}{...rest} />
+    </Pressable>
+  )
 }
 
 const styles = StyleSheet.create({
-    box: {
-        borderRadius: 8,
-        backgroundColor: '#A43333',
-        padding: 20,
+  box: {
+    borderRadius: 8,
+    backgroundColor: '#A43333',
+    padding: 20,
 
-    },
+  },
 })

@@ -1,4 +1,5 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
+//middleware function untuk fetch data dari (penyambung component ke store)
 
 //login
 export const fetchAuth = createAsyncThunk(

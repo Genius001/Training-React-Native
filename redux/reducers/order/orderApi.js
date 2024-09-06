@@ -1,46 +1,52 @@
-import { createSlice } from "@reduxjs/toolkit";
-import { fetchAuth } from "./authApi";
-import * as SecureStore from 'expo-secure-store';
+import { createAsyncThunk } from "@reduxjs/toolkit";
 
-const loginSlice = createSlice({
-  name: "user",
-  initialState: {
-    isLoading: false,
-    carId: null,
-    startRent: null,
-    endRent: null,
-    data: {},
-    paymentCountdown: null,
-    paymentMethod: null,
-    verificationCountdown: null,
-    errorMessage: null,
-  },
-  reducers: {
-    setCarId: (state, { payload }) => {
-      state.carId = payload;
-    },
-  },
-  extraReducers: (builder) => {
-    builder.addCase(fetchAuth.pending, (state, action) => {
-      state.isLoading = true;
-    });
-    builder.addCase(fetchAuth.fulfilled, (state, action) => {
-      state.isLoading = false;
-      state.isLogin = true,
-        state.data = action.payload;
-      setStore(action.payload)
-      state.isModalVisible = true;
-    });
-    builder.addCase(fetchAuth.rejected, (state, action) => {
-      state.isLoading = false
-      state.isError = true;
-      state.errorMessage = action.payload
-      state.isModalVisible = true;
-    });
-  },
-});
+export const postOrder = createAsyncThunk(
+  "postOrder",
+  async ({ token, formData }, { rejectWithValue }) => {
+    try {
+      const response = await fetch(
+        "https://api-car-rental.binaracademy.org/customer/order",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "access_token": token,
+          },
+          body: JSON.stringify({
+            start_rent_at: formData.startRentAt,
+            finish_rent_at: formData.finishRentAt,
+            car_id: formData.carId,
+          }),
+        }
+      );
+      const body = await response.json();
+      if (!response.ok) throw new Error(body.message);
+      return body;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
 
-export { fetchAuth };
-export const { closeModal, logout } = loginSlice.actions
-export const selectUser = state => state.user //selector
-export default loginSlice.reducer
+export const putOrderSlip = createAsyncThunk(
+  "putOrderSlip",
+  async ({ token, id, formData }, { rejectWithValue }) => {
+    try {
+      const response = await fetch(
+        `https://api-car-rental.binaracademy.org/customer/order/${id}/slip`,
+        {
+          method: "PUT",
+          headers: {
+            "access_token": token,
+          },
+          body: formData,
+        }
+      );
+      const body = await response.json();
+      if (!response.ok) throw new Error(body.message);
+      return body;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);

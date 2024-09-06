@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
   },
   countDownText: {
     fontFamily: "PoppinsBold",
-    fontSize: 17,
+    fontSize: 16,
   },
   countDownDate: {
     fontFamily: "PoppinsBold",

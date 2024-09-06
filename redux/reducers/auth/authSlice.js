@@ -13,9 +13,10 @@ const setStore = async (data) => {
   await SecureStore.setItemAsync('auth', JSON.stringify(data));
 };
 
+// Initial state for the auth slice
 const initialState = {
   isLoading: false,
-  user: {}, // Initial empty user object
+  user: {}, // Empty object for the user
   isModalVisible: false,
   isAuthenticated: false,
   error: false,
@@ -33,56 +34,71 @@ const authSlice = createSlice({
     logout: (state) => {
       state.isAuthenticated = false;
       state.user = {};
-      SecureStore.deleteItemAsync('auth');
+      state.isLoading = false; // Reset loading state
+      state.error = false; // Reset error state
+      state.errorMessage = null;
+      SecureStore.deleteItemAsync('auth'); // Ensure async storage is cleared
     },
     closeModal: (state) => {
       state.isModalVisible = false;
       state.error = false;
-      state.errorMessage = null
+      state.errorMessage = null;
     },
   },
   extraReducers: (builder) => {
     builder
+      // Login
       .addCase(fetchAuth.pending, (state) => {
         state.isLoading = true;
-        state.error = null;
+        state.error = false;
+        state.errorMessage = null;
       })
       .addCase(fetchAuth.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isAuthenticated = true;
         state.user = action.payload;
-        setStore(action.payload); // Store user data in SecureStore
+        setStore(action.payload);
         state.isModalVisible = true;
       })
       .addCase(fetchAuth.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.payload?.message || 'An error occurred during login';
+        state.error = true;
+        state.errorMessage = action.payload?.message || 'An error occurred during login';
         state.isModalVisible = true;
       })
+
+      // Register
       .addCase(registerUser.pending, (state) => {
         state.isLoading = true;
-        state.error = null;
+        state.error = false;
+        state.errorMessage = null;
       })
       .addCase(registerUser.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isAuthenticated = true;
         state.user = action.payload;
-        setStore(action.payload); // Store user data in SecureStore
+        setStore(action.payload);
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.payload?.message || 'An error occurred during registration';
+        state.error = true;
+        state.errorMessage = action.payload?.message || 'An error occurred during registration';
       });
   },
 });
 
 export const { setUser, logout, closeModal } = authSlice.actions;
+
 export const selectAuth = (state) => state.auth;
+
 export const initializeAuth = () => async (dispatch) => {
   const storedAuth = await getStoredAuth();
   if (storedAuth) {
     dispatch(setUser(storedAuth));
+  } else {
+    dispatch(logout());
   }
 };
+
 export default authSlice.reducer;
 export { fetchAuth, registerUser };

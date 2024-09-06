@@ -1,14 +1,13 @@
 import {
   View, Text, Image, TextInput,
-  Button, StyleSheet, TouchableOpacity
+  Button, StyleSheet,
 } from 'react-native';
-import React, { useState, useEffect } from 'react';
-import { Link, router } from 'expo-router';
+import React, { useState } from 'react';
+import { Link, useRouter } from 'expo-router';
 import ModalPopUp from '../../components/Modal';
 import { Feather } from '@expo/vector-icons';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { registerUser } from '@/redux/reducers/auth/authApi';
-import { selectAuth } from '@/redux/reducers/auth/authSlice';
 import * as Yup from 'yup';
 import { Formik } from 'formik';
 
@@ -31,41 +30,38 @@ export default function Register() {
   const [modalVisible, setModalVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
+  const router = useRouter();
+  const dispatch = useDispatch(); // Ensure dispatch is correctly used
 
-  const dispatch = useDispatch();
-  const authState = useSelector(selectAuth);
-
-  useEffect(() => {
-    let timeout;
-
-    if (authState.error) {
-      setErrorMessage(authState.error);
-      setSuccessMessage(null);
-      setModalVisible(true);
-      timeout = setTimeout(() => {
-        setModalVisible(false);
-        setErrorMessage(null);
-      }, 2000);
-    } else if (authState.user) {
-      setErrorMessage(null);
+  const handleSubmit = async (values) => {
+    console.log('test submit');
+    try {
+      // Dispatch registerUser thunk with form values
+      await dispatch(registerUser(values)).unwrap();
+      console.log('Registration successful');
       setSuccessMessage('Register Successfully!');
       setModalVisible(true);
-      timeout = setTimeout(() => {
+      setTimeout(() => {
         setModalVisible(false);
         setSuccessMessage(null);
         router.navigate('/Login');
       }, 2000);
+    } catch (e) {
+      console.error('Registration error:', e);
+      setErrorMessage(e.message);
+      setModalVisible(true);
+      setTimeout(() => {
+        setModalVisible(false);
+        setErrorMessage(null);
+      }, 2000);
     }
-
-    return () => clearTimeout(timeout);
-  }, [authState]);
+  };
 
   return (
     <View>
       <Image style={styles.logo} source={require('@/assets/images/tmmin.png')} />
       <Text style={styles.heading}>Sign Up</Text>
 
-      {/* Formik component with Yup validation */}
       <Formik
         initialValues={{
           name: '',
@@ -73,26 +69,7 @@ export default function Register() {
           password: ''
         }}
         validationSchema={SignupSchema}
-        onSubmit={async (values) => {
-          try {
-            // Dispatch registerUser thunk with form values
-            await dispatch(registerUser(values)).unwrap();
-            setSuccessMessage('Register Successfully!');
-            setModalVisible(true);
-            setTimeout(() => {
-              setModalVisible(false);
-              setSuccessMessage(null);
-              router.navigate('/Login');
-            }, 2000);
-          } catch (e) {
-            setErrorMessage(e.message);
-            setModalVisible(true);
-            setTimeout(() => {
-              setModalVisible(false);
-              setErrorMessage(null);
-            }, 2000);
-          }
-        }}
+        onSubmit={handleSubmit} // Use the handleSubmit function directly
       >
         {({ handleChange, handleBlur, handleSubmit, values, errors, touched }) => (
           <>
@@ -102,9 +79,10 @@ export default function Register() {
                 onBlur={handleBlur('name')}
                 onChangeText={handleChange('name')}
                 style={styles.formInput}
-                placeholder='name'
+                placeholder='Name'
+                autoCapitalize='words'
               />
-              {errors.name && touched.name ? <Text>{errors.name}</Text> : null}
+              {errors.name && touched.name ? <Text style={styles.errorText}>{errors.name}</Text> : null}
             </View>
             <View style={styles.formContainer}>
               <Text style={styles.formLabel}>Email*</Text>
@@ -113,19 +91,22 @@ export default function Register() {
                 onChangeText={handleChange('email')}
                 style={styles.formInput}
                 placeholder='johndee@gmail.com'
+                keyboardType='email-address'
+                autoCapitalize='none'
               />
-              {errors.email && touched.email ? <Text>{errors.email}</Text> : null}
+              {errors.email && touched.email ? <Text style={styles.errorText}>{errors.email}</Text> : null}
             </View>
             <View style={styles.formContainer}>
-              <Text style={styles.formLabel}>Create Password</Text>
+              <Text style={styles.formLabel}>Password*</Text>
               <TextInput
                 style={styles.formInput}
                 onBlur={handleBlur('password')}
                 onChangeText={handleChange('password')}
                 secureTextEntry={true}
-                placeholder='password'
+                placeholder='Password'
+                autoCapitalize='none'
               />
-              {errors.password && touched.password ? <Text>{errors.password}</Text> : null}
+              {errors.password && touched.password ? <Text style={styles.errorText}>{errors.password}</Text> : null}
             </View>
 
             <View style={styles.formContainer}>
@@ -136,7 +117,7 @@ export default function Register() {
               />
               <Text style={styles.textRegister}>
                 Already have an account?{` `}
-                <Link style={styles.linkRegister} href="/">Sign in free</Link>
+                <Link style={styles.linkRegister} href="/Login">Sign in here</Link>
               </Text>
             </View>
           </>
@@ -213,5 +194,9 @@ const styles = StyleSheet.create({
     color: '#000000',
     textAlign: 'center',
     marginTop: 10,
+  },
+  errorText: {
+    color: 'red',
+    marginTop: 5,
   },
 });
