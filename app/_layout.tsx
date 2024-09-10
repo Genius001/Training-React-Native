@@ -9,6 +9,7 @@ import 'regenerator-runtime/runtime';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Provider } from 'react-redux';
 import { store } from '../redux/store';
+import crashlytics from '@react-native-firebase/crashlytics';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -27,6 +28,8 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (loaded) {
+      crashlytics().setCrashlyticsCollectionEnabled(true);
+      crashlytics().log('App Launched');
       setTimeout(() => {
         if (getUser()) router.navigate('/(tabs)')
       }, 200)

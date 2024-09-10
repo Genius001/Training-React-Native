@@ -124,7 +124,7 @@ export default function DetailScreen() {
         <Button color="#3D7B3F" title="Lanjutkan Pembayaran" accessibilityLabel="Proceed to Payment" onPress={() => {
           dispatch(setCarId(id))
           dispatch(resetState())
-          router.navigate("(order)")
+          router.navigate("(order)/Payment")
         }} />
       </View>
     </View>

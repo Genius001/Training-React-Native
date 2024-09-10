@@ -9,7 +9,7 @@ export default function () {
         screenOptions={{
           headerShown: false,
         }}>
-        <Stack.Screen name="index" />
+        <Stack.Screen name="Payment" />
       </Stack>
     </View>
   );
