@@ -12,11 +12,16 @@ import { useSelector, useDispatch } from "react-redux";
 import { getCar, selectCar } from '../../redux/reducers/car/carSlice';
 import { selectAuth } from '../../redux/reducers/auth/authSlice';
 import GeoLocation from '../../components/Geolocation';
+import { crashlytics } from '@react-native-firebase/crashlytics';
+import '@react-native-firebase/app';
 
 export default function HomeScreen() {
   const { data, isLoading: carsLoading } = useSelector(selectCar);
   const { isAuthenticated, user, isLoading: authLoading } = useSelector(selectAuth);
   const dispatch = useDispatch();
+  const forceCrash = () => {
+    crashlytics().crash();
+  };
 
   useEffect(() => {
     const controller = new AbortController(); // UseEffect cleanup to avoid memory leaks
@@ -84,7 +89,7 @@ export default function HomeScreen() {
           <View>
             <Row justifyContent={"space-between"}>
               <Col>
-                <ButtonIcon name={'truck'} color={'#ffffff'} />
+                <ButtonIcon name={'truck'} color={'#ffffff'} onPress={forceCrash} />
                 <Text style={styles.iconText}>Sewa Mobil</Text>
               </Col>
               <Col>

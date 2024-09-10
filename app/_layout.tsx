@@ -10,6 +10,9 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import { Provider } from 'react-redux';
 import { store } from '../redux/store';
 import crashlytics from '@react-native-firebase/crashlytics';
+import { logGitShaToCrashlytics } from '../utils/CrashlyticsUtil';
+import '@react-native-firebase/app';
+
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -27,6 +30,7 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
+    logGitShaToCrashlytics();
     if (loaded) {
       crashlytics().setCrashlyticsCollectionEnabled(true);
       crashlytics().log('App Launched');
@@ -45,7 +49,7 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <ThemeProvider value={colorScheme === 'light' ? DarkTheme : DefaultTheme}>
       <Provider store={store}>
         <Stack>
           <Stack.Screen name="(auth)" options={{ headerShown: false }} />
