@@ -29,10 +29,10 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="(carList)"
+        name="(carlist)"
         options={{
           title: "Daftar Mobil",
-          href: "/(carList)",
+          href: "/(carlist)",
           tabBarStyle: {
             display: segments.includes('details') ?
               'none' : 'flex'

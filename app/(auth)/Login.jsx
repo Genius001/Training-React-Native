@@ -5,7 +5,7 @@ import { Link, router } from 'expo-router';
 import ModalPopUp from '../../components/Modal';
 import { Feather } from '@expo/vector-icons';
 import { useDispatch, useSelector } from 'react-redux';
-import { selectAuth, fetchAuth, closeModal } from '@/redux/reducers/auth/authSlice';
+import { selectAuth, fetchAuth, closeModal } from '../../redux/reducers/auth/authSlice';
 
 export default function Login() {
   const [modalVisible, setModalVisible] = useState(false);

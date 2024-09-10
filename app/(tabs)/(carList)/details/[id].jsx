@@ -123,7 +123,8 @@ export default function DetailScreen() {
         <Text style={styles.price}>{formatCurrency.format(data.price)}</Text>
         <Button color="#3D7B3F" title="Lanjutkan Pembayaran" accessibilityLabel="Proceed to Payment" onPress={() => {
           dispatch(setCarId(id))
-          router.navigate("Payment")
+          dispatch(resetState())
+          router.navigate("(order)")
         }} />
       </View>
     </View>

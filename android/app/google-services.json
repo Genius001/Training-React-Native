@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "747684487944",
+    "project_id": "tmmin-car-rental-app",
+    "storage_bucket": "tmmin-car-rental-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:747684487944:android:aa435e4e3aa874304282bd",
+        "android_client_info": {
+          "package_name": "com.anonymous.TMMINCarRentalApp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDGz4j6CrJ2uPesAHtdN6TJoTzD7MwMouw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

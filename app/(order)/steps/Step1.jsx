@@ -1,10 +1,10 @@
-import { useSelector, useDispatch } from "react-redux";
 import { View, Text, TextInput, StyleSheet, Pressable } from "react-native";
-import ListCar from "@/components/ListCar";
-import Button from "@/components/Button";
+import { useCallback, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { selectOrder, setStateByName } from "@/redux/reducers/order/orderSlice";
 import { selectCarDetail } from "@/redux/reducers/car/carDetailSlice";
-import { useCallback, useState } from "react";
+import ListCar from "@/components/ListCar";
+import Button from "@/components/Button";
 import { Feather } from "@expo/vector-icons";
 
 const paymentMethods = [
@@ -12,7 +12,8 @@ const paymentMethods = [
   { bankName: "MANDIRI", account: 12345678, name: "a. n Super Travel" },
   { bankName: "BNI", account: 12345678, name: "a. n Super Travel" },
 ];
-export default function step1({ setActivityStep }) {
+
+export default function step1() {
   const [promoText, setPromoText] = useState(null);
   const { selectedBank, promo } = useSelector(selectOrder);
   const { data } = useSelector(selectCarDetail);

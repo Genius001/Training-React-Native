@@ -6,9 +6,12 @@ const initialState = {
   carId: null,
   data: {},
   errorMessage: null,
-  currentStep: null,
+
+  activeStep: 0,
   selectedBank: null,
   promo: null,
+  isModalVisible: false,
+  status: "pending",
   // paymentCountdown: null,
   // verificationCountdown: null,
 };
@@ -35,18 +38,33 @@ const orderSlice = createSlice({
     builder.addCase(postOrder.fulfilled, (state, action) => {
       state.isLoading = false;
       state.data = action.payload;
-      state.isModalVisible = true;
+      state.status = "success";
+      // state.isModalVisible = true;
     });
     builder.addCase(postOrder.rejected, (state, action) => {
       state.isLoading = false
       state.isError = true;
+      state.status = "error";
       state.errorMessage = action.payload
-      state.isModalVisible = true;
+      // state.isModalVisible = true;
+    });
+
+    builder.addCase(putOrderSlip.pending, (state, action) => {
+      state.isLoading = true;
+    });
+    builder.addCase(putOrderSlip.fulfilled, (state, action) => {
+      state.isLoading = false;
+      state.data = action.payload;
+    });
+    builder.addCase(putOrderSlip.rejected, (state, action) => {
+      state.isLoading = false
+      // state.isError = true;
+      state.errorMessage = action.payload
+      // state.isModalVisible = true;
     });
   },
 });
 
-// export { postorder };
 export { postOrder, putOrderSlip };
 export const { setCarId, setStateByName, resetState } = orderSlice.actions;
 export const selectOrder = (state) => state.order; //selector

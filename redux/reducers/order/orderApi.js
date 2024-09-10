@@ -33,16 +33,17 @@ export const putOrderSlip = createAsyncThunk(
   async ({ token, id, formData }, { rejectWithValue }) => {
     try {
       const response = await fetch(
-        `https://api-car-rental.binaracademy.org/customer/order/${id}/slip`,
+        `https://api-car-rental.binaracademy.org/customer/order/` + id + `/slip`,
         {
           method: "PUT",
           headers: {
+            "Content-Type": "multipart/form-data",
             "access_token": token,
           },
           body: formData,
         }
       );
-      const body = await response.json();
+      const body = await response?.json();
       if (!response.ok) throw new Error(body.message);
       return body;
     } catch (error) {

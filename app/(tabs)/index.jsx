@@ -1,4 +1,4 @@
-import { Image, StyleSheet, View, Text, Button } from "react-native";
+import { Image, StyleSheet, View, Text, Button, ActivityIndicator } from "react-native";
 import ParallaxFlatList from "../../components/ParallaxFlatList";
 import Constants from "expo-constants";
 import { Row, Col } from '@/components/Grid';
@@ -10,25 +10,25 @@ import React from "react";
 import * as SecureStore from "expo-secure-store";
 import { useSelector, useDispatch } from "react-redux";
 import { getCar, selectCar } from '../../redux/reducers/car/carSlice';
-import { selectAuth } from '../../redux/reducers/auth/authSlice'; // Import auth slice
+import { selectAuth } from '../../redux/reducers/auth/authSlice';
 import GeoLocation from '../../components/Geolocation';
 
 export default function HomeScreen() {
-  const { data, isLoading } = useSelector(selectCar);
-  const { isAuthenticated, user } = useSelector(selectAuth);
+  const { data, isLoading: carsLoading } = useSelector(selectCar);
+  const { isAuthenticated, user, isLoading: authLoading } = useSelector(selectAuth);
   const dispatch = useDispatch();
 
   useEffect(() => {
-    const controller = new AbortController(); // UseEffect cleanup untuk menghindari memory Leak
-    const signal = controller.signal;  // UseEffect cleanup
+    const controller = new AbortController(); // UseEffect cleanup to avoid memory leaks
+    const signal = controller.signal;
 
-    dispatch(getCar(signal))
+    dispatch(getCar(signal));
 
     return () => {
-      // cancel request sebelum component di close
+      // Cancel request before component is closed
       controller.abort();
     };
-  }, []);
+  }, [dispatch]);
 
   const renderItem = useCallback(({ item }) => (
     <ListCar
@@ -39,9 +39,7 @@ export default function HomeScreen() {
       passengers={item.passengers || 5}
       baggage={item.baggage || 4}
       price={item.price}
-      onPress={() =>
-        router.push('(carList)/details/' + item.id)
-      }
+      onPress={() => router.push('(carlist)/details/' + item.id)}
     />
   ), []);
 
@@ -51,7 +49,13 @@ export default function HomeScreen() {
       headerImage={
         <View style={styles.container}>
           <View>
-            <Text style={styles.titleText}>Hi, {isAuthenticated ? user?.email : 'Guest'}</Text>
+            {authLoading ? (
+              <ActivityIndicator size="small" color="#ffffff" />
+            ) : (
+              <Text style={styles.titleText}>
+                Hi, {isAuthenticated ? user : 'Guest'}
+              </Text>
+            )}
             <GeoLocation />
           </View>
           <View>
@@ -80,26 +84,26 @@ export default function HomeScreen() {
           <View>
             <Row justifyContent={"space-between"}>
               <Col>
-                <ButtonIcon name={'truck'} color={'#ffffff'}></ButtonIcon>
+                <ButtonIcon name={'truck'} color={'#ffffff'} />
                 <Text style={styles.iconText}>Sewa Mobil</Text>
               </Col>
               <Col>
-                <ButtonIcon name={'box'} color={'#ffffff'}></ButtonIcon>
+                <ButtonIcon name={'box'} color={'#ffffff'} />
                 <Text style={styles.iconText}>Sewa Mobil</Text>
               </Col>
               <Col>
-                <ButtonIcon name={'key'} color={'#ffffff'}></ButtonIcon>
+                <ButtonIcon name={'key'} color={'#ffffff'} />
                 <Text style={styles.iconText}>Sewa Mobil</Text>
               </Col>
               <Col>
-                <ButtonIcon name={'camera'} color={'#ffffff'}></ButtonIcon>
+                <ButtonIcon name={'camera'} color={'#ffffff'} />
                 <Text style={styles.iconText}>Sewa Mobil</Text>
               </Col>
             </Row>
           </View>
         </>
       }
-      loading={isLoading}
+      loading={carsLoading}
       data={data}
       keyExtractor={(item) => item.id.toString()}
       renderItem={renderItem}

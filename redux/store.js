@@ -7,14 +7,14 @@ import orderSlice from "./reducers/order/orderSlice";
 //npm i @reduxjs/toolkit react-redux
 
 export const store = configureStore({
-    reducer: {
-        car: carSlice,
-        carDetail: carDetailSlice,
-        auth: authSlice,
-        order: orderSlice
-    },
-    enhancers:
-        (getDefaultEnhancers) =>
-            __DEV__ ? getDefaultEnhancers()
-                .concat(reactotron.createEnhancer()) : getDefaultEnhancers(),
+  reducer: {
+    car: carSlice,
+    carDetail: carDetailSlice,
+    auth: authSlice,
+    order: orderSlice
+  },
+  enhancers:
+    (getDefaultEnhancers) =>
+      __DEV__ ? getDefaultEnhancers()
+        .concat(reactotron.createEnhancer()) : getDefaultEnhancers(),
 })
