@@ -12,7 +12,20 @@
           "package_name": "com.anonymous.TMMINCarRentalApp"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "747684487944-dcuqghtr95bi69vvfsb26i5g3bhvn1jt.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.anonymous.TMMINCarRentalApp",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "747684487944-hrspql7mfmo44cu78u3o138sp5071htk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDGz4j6CrJ2uPesAHtdN6TJoTzD7MwMouw"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "747684487944-hrspql7mfmo44cu78u3o138sp5071htk.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

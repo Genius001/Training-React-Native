@@ -45,7 +45,7 @@ export default function CarList() {
       <View style={styles.container}>
         <Text style={styles.title}>Daftar Mobil</Text>
         {isLoading ? (
-          <ActivityIndicator size="large" color="#0000ff" />
+          <ActivityIndicator size="large" color="#3D7B3F" />
         ) : isError ? (
           <Text style={styles.errorText}>Failed to load cars. Please try again later.</Text>
         ) : data.length > 0 ? (

@@ -6,7 +6,12 @@ import ModalPopUp from '../../components/Modal';
 import { Feather } from '@expo/vector-icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { selectAuth, fetchAuth, closeModal } from '../../redux/reducers/auth/authSlice';
+import { GoogleSignin, GoogleSigninButton } from '@react-native-google-signin/google-signin';
+import auth from '@react-native-firebase/auth';
 
+GoogleSignin.configure({
+  webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+});
 export default function Login() {
   const [modalVisible, setModalVisible] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
@@ -16,6 +21,23 @@ export default function Login() {
     password: '',
   });
 
+  async function onGoogleButtonPress() {
+    await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+    const { data: { idToken } } = await GoogleSignin.signIn();
+
+    const googleCredential = await auth.GoogleAuthProvider.credential(idToken);
+    console.log(idToken, googleCredential)
+    return auth().signInWithCredential(googleCredential);
+  }
+
+  function onAuthStateChanged(user) {
+    console.log(user)
+    // if (initializing) setInitializing(false);
+  }
+  useEffect(() => {
+    const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
+    return subscriber; //unsubscriber on unmount
+  })
   const dispatch = useDispatch();
   const authState = useSelector(selectAuth);
 
@@ -106,7 +128,18 @@ export default function Login() {
           <Link
             style={styles.linkRegister} href="/Register">Sign up for free</Link>
         </Text>
+        <Text style={styles.textRegister}>
+          or
+        </Text>
+        <GoogleSigninButton
+          size={GoogleSigninButton.Size.Wide}
+          color={GoogleSigninButton.Color.Dark}
+          onPress={onGoogleButtonPress}
+          disabled={authState.loading}
+          style={styles.googleButton}
+        />
       </View>
+
       <ModalPopUp visible={modalVisible}>
         <View style={styles.modalBackground}>
           <Feather
@@ -184,5 +217,13 @@ const styles = StyleSheet.create({
     color: '#000000',
     textAlign: 'center',
     marginTop: 10,
+  },
+  googleButton: {
+    marginTop: 10,
+    alignContent: 'center',
+    justifyContent: 'center',
+    alignItems: 'center',
+    alignSelf: 'center',
+
   },
 });

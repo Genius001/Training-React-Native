@@ -58,7 +58,7 @@ export default function DetailScreen() {
   );
   // if(isLoading) return <ActivityIndicator/>
   if (isLoading) {
-    return <ActivityIndicator size="large" color="#0000ff" style={styles.loading} />;
+    return <ActivityIndicator size="large" color="#3D7B3F" style={styles.loading} />;
   }
 
   if (isError || !data) {

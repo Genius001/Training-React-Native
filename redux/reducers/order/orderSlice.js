@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { postOrder, putOrderSlip } from "./orderApi";
+import { selectCarDetail } from "@/redux/reducers/car/carDetailSlice";
 
 const initialState = {
   isLoading: false,
@@ -28,8 +29,9 @@ const orderSlice = createSlice({
       state[name] = value;
     },
     resetState: (state) => {
-      state = initialState
+      return { ...initialState }
     }
+
   },
   extraReducers: (builder) => {
     builder.addCase(postOrder.pending, (state, action) => {
@@ -55,6 +57,7 @@ const orderSlice = createSlice({
     builder.addCase(putOrderSlip.fulfilled, (state, action) => {
       state.isLoading = false;
       state.data = action.payload;
+      state.status = "upload-success";
     });
     builder.addCase(putOrderSlip.rejected, (state, action) => {
       state.isLoading = false

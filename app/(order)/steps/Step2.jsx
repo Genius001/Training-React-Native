@@ -22,7 +22,7 @@ function getDate24() {
 export default function Step2() {
   const [promoText, setPromoText] = useState(null);
   const { data, selectedBank, errorMessage, isModalVisible, status } = useSelector(selectOrder);
-  const user = useSelector(selectAuth);
+  const { user, accessToken } = useSelector(selectAuth);
   const carDetail = useSelector(selectCarDetail);
 
   const [image, setImage] = useState(null);
@@ -40,6 +40,7 @@ export default function Step2() {
       allowsEditing: true,
       aspect: [4, 3],
       quality: 0.2,
+
     });
 
     if (!result.canceled) {
@@ -56,7 +57,7 @@ export default function Step2() {
       const formData = new FormData();
       formData.append("slip", image);
       dispatch(putOrderSlip({
-        token: user.data.access_token,
+        token: accessToken,
         id: data.id,
         formData
       }));
@@ -64,6 +65,7 @@ export default function Step2() {
   };
 
   useEffect(() => {
+    console.log(status);
     if (status === "upload-success") {
       dispatch(setStateByName({ name: 'activeStep', value: 2 }));
     } else if (errorMessage) {
@@ -171,6 +173,7 @@ export default function Step2() {
           title="Upload"
           color="#3D7B3F"
           onPress={handleUpload}
+          disabled={!image}
         />
       </ModalDraggable>
     </View>
@@ -250,10 +253,13 @@ const styles = StyleSheet.create({
   uploadImage: {
     height: 400,
     backgroundColor: "#D0D0D0",
+    justifyContent: "center",
+    alignItems: "center",
   },
   image: {
     height: 400,
     width: "100%",
+    resizeMode: "contain",
   },
   readOnlyInput: {
     marginVertical: 10,

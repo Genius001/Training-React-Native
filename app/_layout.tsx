@@ -12,7 +12,7 @@ import { store } from '../redux/store';
 import crashlytics from '@react-native-firebase/crashlytics';
 import { logGitShaToCrashlytics } from '../utils/CrashlyticsUtil';
 import '@react-native-firebase/app';
-
+import { firebase } from '@react-native-firebase/crashlytics';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();

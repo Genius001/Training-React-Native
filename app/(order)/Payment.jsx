@@ -1,5 +1,4 @@
-import { useState, useEffect } from "react";
-import { View, Text, StyleSheet, Button, ActivityIndicator, Modal } from "react-native";
+import { View, Text, StyleSheet, Button, ActivityIndicator, Modal, TouchableOpacity } from "react-native";
 import { ProgressStep, ProgressSteps } from "react-native-progress-stepper";
 import formatIDR from '@/utils/formatCurrency';
 import Step1 from "./steps/Step1";
@@ -10,20 +9,21 @@ import { selectOrder, setStateByName, postOrder } from "@/redux/reducers/order/o
 import { useDispatch, useSelector } from "react-redux";
 import { selectAuth } from '@/redux/reducers/auth/authSlice';
 import moment from 'moment';
-import React from "react";
+import React, { useState, useEffect } from "react";
+import OrderListModal from "@/components/OrderList";
 
 export default function Payment() {
   const carDetail = useSelector(selectCarDetail);
-  console.log(carDetail);
   const { data, activeStep, selectedBank, status, errorMessage } = useSelector(selectOrder);
   const { user, accessToken, isAuthenticated } = useSelector(selectAuth);
   const dispatch = useDispatch();
   const [modalVisible, setModalVisible] = useState(false);
+  const [orderListVisible, setOrderListVisible] = useState(false);
 
-  const handleOrder = () => {
+  const handleOrder = async () => {
     if (!accessToken) {
       console.error("User token is missing");
-      return; // You might want to display an error message here
+      return; // Optionally, display an error message here
     }
 
     const formData = {
@@ -31,21 +31,25 @@ export default function Payment() {
       startRentAt: moment().format('YYYY-MM-DD'),
       finishRentAt: moment().add(4, "days").format('YYYY-MM-DD'),
     };
-    dispatch(postOrder({ token: accessToken, formData }));
+
+    try {
+      await dispatch(postOrder({ token: accessToken, formData }));
+    } catch (error) {
+      console.error("Order submission failed", error);
+      // Optionally, handle errors here
+    }
   };
 
   useEffect(() => {
     if (status === "success") {
-      console.log('Order Success');
       dispatch(setStateByName({ name: 'activeStep', value: 1 }));
     } else if (status === "error") {
-      console.error('Error: ', errorMessage);
       setModalVisible(true); // Show error message to user
     }
   }, [status]);
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#fff" }}>
+    <View style={styles.container}>
       <ProgressSteps activeStep={activeStep}>
         <ProgressStep label="Pilih Metode" removeBtnRow={true}>
           <Step1 />
@@ -82,20 +86,16 @@ export default function Payment() {
             <Text style={styles.label}>Klik konfirmasi pembayaran untuk mempercepat proses pengecekan</Text>
             <Button
               color="#3D7B3F"
-              style={{ marginBottom: 10 }}
               onPress={() => {
                 dispatch(setStateByName({ name: 'isModalVisible', value: true }));
               }}
               title="Konfirmasi Pembayaran"
             />
-            <Button
-              color="#ffffff"
-              TextColor="#000"
-              title="Lihat Daftar Pesanan"
-              onPress={() => {
-                carDetail.data.name;
-              }}
-            />
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity onPress={() => setOrderListVisible(true)}>
+                <Text style={styles.orderListText}>Lihat Daftar Pesanan</Text>
+              </TouchableOpacity>
+            </View>
           </>
         )}
       </View>
@@ -118,11 +118,28 @@ export default function Payment() {
           </View>
         </View>
       </Modal>
+
+      <OrderListModal
+        visible={orderListVisible}
+        onClose={() => setOrderListVisible(false)}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+  },
+  buttonContainer: {
+    borderWidth: 2,
+    borderColor: 'green',
+    marginTop: 10,
+    height: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   price: {
     fontFamily: "PoppinsBold",
     fontSize: 20,
@@ -168,7 +185,6 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: 'white',
     borderRadius: 10,
-    alignItems: 'center',
   },
   modalTitle: {
     fontSize: 18,
@@ -178,5 +194,18 @@ const styles = StyleSheet.create({
   modalMessage: {
     fontSize: 16,
     marginBottom: 20,
+  },
+  closeButton: {
+    padding: 10,
+    backgroundColor: '#3D7B3F',
+    borderRadius: 5,
+  },
+  closeButtonText: {
+    color: 'white',
+    textAlign: 'center',
+  },
+  orderListText: {
+    fontSize: 16,
+    color: '#3D7B3F',
   },
 });

@@ -3,8 +3,9 @@ import { fetchAuth, registerUser } from './authApi';
 import * as SecureStore from 'expo-secure-store';
 
 // Async function to get stored auth data
-const getStoredAuth = async () => {
-  const user = await SecureStore.getItemAsync('user');
+const getStoredAuth = () => {
+  const user = SecureStore.getItem('user');
+  console.log(JSON.parse(user).email)
   return user ? JSON.parse(user) : null;
 };
 
@@ -16,12 +17,13 @@ const setStore = async (value) => {
 // Initial state for the auth slice
 const initialState = {
   isLoading: false,
-  user: {},
-  accessToken: null,
+  user: getStoredAuth().email,
+  accessToken: getStoredAuth().access_token,
   isModalVisible: false,
-  isAuthenticated: false,
+  isAuthenticated: getStoredAuth().email ? true : false,
   error: false,
   errorMessage: null,
+
 };
 
 const authSlice = createSlice({
