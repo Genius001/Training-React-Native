@@ -3,9 +3,8 @@ import { fetchAuth, registerUser } from './authApi';
 import * as SecureStore from 'expo-secure-store';
 
 // Async function to get stored auth data
-const getStoredAuth = () => {
-  const user = SecureStore.getItem('user');
-  console.log(JSON.parse(user).email)
+const getStoredAuth = async () => {
+  const user = await SecureStore.getItemAsync('user');
   return user ? JSON.parse(user) : null;
 };
 
@@ -17,13 +16,20 @@ const setStore = async (value) => {
 // Initial state for the auth slice
 const initialState = {
   isLoading: false,
-  user: getStoredAuth().email,
-  accessToken: getStoredAuth().access_token,
+  user: null,
+  accessToken: null,
   isModalVisible: false,
-  isAuthenticated: getStoredAuth().email ? true : false,
+  isAuthenticated: false,
   error: false,
   errorMessage: null,
+};
 
+// Async thunk to initialize auth state
+export const initializeAuth = () => async (dispatch) => {
+  const storedAuth = await getStoredAuth();
+  if (storedAuth) {
+    dispatch(authSlice.actions.setAuthData(storedAuth));
+  }
 };
 
 const authSlice = createSlice({
@@ -37,13 +43,14 @@ const authSlice = createSlice({
     },
     logout: (state) => {
       state.isAuthenticated = false;
-      state.user = {};
+      state.user = null;
+      state.accessToken = null;
       SecureStore.deleteItemAsync('user'); // Ensure async storage is cleared
     },
-    // Set initial data from async storage
     setAuthData: (state, action) => {
-      state.user = action.payload;
-      state.isAuthenticated = !!action.payload;
+      state.user = action.payload.email;
+      state.accessToken = action.payload.access_token;
+      state.isAuthenticated = !!action.payload.email;
     },
   },
   extraReducers: (builder) => {
@@ -75,7 +82,6 @@ const authSlice = createSlice({
       .addCase(registerUser.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isAuthenticated = true;
-        state.user = action.payload;
         state.user = action.payload.user; // user object from registration
         state.accessToken = action.payload.access_token; // access_token from registration
         setStore(action.payload);
@@ -87,14 +93,6 @@ const authSlice = createSlice({
       });
   },
 });
-
-// Thunk to initialize auth state
-// export const initializeAuth = () => async (dispatch) => {
-//   const storedAuth = await getStoredAuth();
-//   if (storedAuth) {
-//     dispatch(authSlice.actions.setAuthData(storedAuth));
-//   }
-// };
 
 export { authSlice };
 export { fetchAuth, registerUser };

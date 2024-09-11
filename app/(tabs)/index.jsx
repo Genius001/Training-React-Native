@@ -19,9 +19,6 @@ export default function HomeScreen() {
   const { data, isLoading: carsLoading } = useSelector(selectCar);
   const { isAuthenticated, user, isLoading: authLoading } = useSelector(selectAuth);
   const dispatch = useDispatch();
-  const forceCrash = () => {
-    crashlytics().crash();
-  };
 
   useEffect(() => {
     const controller = new AbortController(); // UseEffect cleanup to avoid memory leaks
@@ -37,7 +34,7 @@ export default function HomeScreen() {
 
   const renderItem = useCallback(({ item }) => (
     <ListCar
-      style={{ marginHorizontal: 20 }}
+      style={styles.listCar}
       key={item.id}
       image={{ uri: item.image }}
       carName={item.name}
@@ -47,6 +44,10 @@ export default function HomeScreen() {
       onPress={() => router.push('(carlist)/details/' + item.id)}
     />
   ), []);
+
+  const forceCrash = () => {
+    crashlytics().crash();
+  };
 
   return (
     <ParallaxFlatList
@@ -112,9 +113,7 @@ export default function HomeScreen() {
       data={data}
       keyExtractor={(item) => item.id.toString()}
       renderItem={renderItem}
-      viewabilityConfig={{
-        waitForInteraction: true,
-      }}
+      viewabilityConfig={{ waitForInteraction: true }}
     />
   );
 }
@@ -163,11 +162,7 @@ const styles = StyleSheet.create({
     paddingTop: 5,
     textAlign: "center"
   },
-  listTitle: {
-    color: "#000000",
-    fontFamily: "Poppins",
-    fontSize: 14,
-    fontWeight: "700",
-    paddingBottom: 5,
-  }
+  listCar: {
+    marginHorizontal: 20,
+  },
 });
