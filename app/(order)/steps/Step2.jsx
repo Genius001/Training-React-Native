@@ -60,14 +60,16 @@ export default function Step2() {
         token: accessToken,
         id: data.id,
         formData
+
       }));
     }
   };
 
   useEffect(() => {
-    console.log(status);
     if (status === "upload-success") {
-      dispatch(setStateByName({ name: 'activeStep', value: 2 }));
+      setTimeout(() => {
+        dispatch(setStateByName({ name: 'activeStep', value: 2 }));
+      }, 1000);
     } else if (errorMessage) {
       Alert.alert("Error", errorMessage);
     }

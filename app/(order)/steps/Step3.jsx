@@ -1,4 +1,4 @@
-import { View, Image, Text, StyleSheet, Button, ActivityIndicator, } from 'react-native';
+import { View, Image, Text, StyleSheet, Button, ActivityIndicator, ScrollView } from 'react-native';
 import { useSelector } from 'react-redux';
 import { selectOrder } from '@/redux/reducers/order/orderSlice';
 import { selectCarDetail } from '@/redux/reducers/car/carDetailSlice';
@@ -16,7 +16,7 @@ export default function Step3() {
   console.log(carDetail);
 
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.heading}>Order Summary</Text>
 
       <View style={styles.detailContainer}>
@@ -75,7 +75,7 @@ export default function Step3() {
         color="#3D7B3F"
         disabled={imageLoading}
       />
-    </View>
+    </ScrollView>
   );
 }
 
@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   text: {
-    fontFamily: 'PoppinsRegular ',
+    fontFamily: 'PoppinsRegular',
     fontSize: 16,
   },
   img: {
