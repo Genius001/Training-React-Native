@@ -21,19 +21,18 @@ export default function Step3() {
 
       <View style={styles.detailContainer}>
         <Text style={styles.label}>Car Details:</Text>
-        <Image style={styles.img} source={{ uri: carDetail?.data?.image }} />
-        <View style={styles.textContainer}>
-          <Row gap={50}>
+        <Row gap={20} alignSelf="center" alignItems="center" justifyContent="center">
+          <Image style={styles.img} source={{ uri: carDetail?.data?.image }} />
+          <View style={styles.textContainer}>
             <Col>
               <Text style={styles.text}>Name: {carDetail?.data?.name}</Text>
               <Text style={styles.text}>Price: {formatIDR(carDetail?.data?.price)}</Text>
-            </Col>
-            <Col>
               <Text style={styles.text}>Passengers: {carDetail?.data?.passengers || 5}</Text>
               <Text style={styles.text}>Baggage: {carDetail?.data?.baggage || 4}</Text>
             </Col>
-          </Row>
-        </View>
+          </View>
+        </Row>
+
       </View>
 
       <View style={styles.detailContainer}>
@@ -84,16 +83,18 @@ export default function Step3() {
 
 const styles = StyleSheet.create({
   slip: {
-    flex: 1,
+    flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 20,
     marginBottom: 20,
+
   },
   image: {
     width: 150,
     height: 150,
     resizeMode: 'contain',
+
   },
   container: {
     flex: 1,
@@ -102,11 +103,11 @@ const styles = StyleSheet.create({
   heading: {
     fontFamily: 'PoppinsBold',
     fontSize: 24,
-    marginBottom: 20,
+    marginBottom: 5,
     textAlign: 'center',
   },
   detailContainer: {
-    marginBottom: 20,
+    marginBottom: 10,
   },
   label: {
     fontFamily: 'PoppinsBold',
