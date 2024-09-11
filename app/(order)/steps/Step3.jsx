@@ -50,7 +50,10 @@ export default function Step3() {
         </View>
       )}
 
+
+
       <View style={styles.slip}>
+        <Text style={styles.label}>Transfer Receipt</Text>
         {data.slip ? (
           <>
             {imageLoading && <ActivityIndicator size="large" color="#3D7B3F" />}
