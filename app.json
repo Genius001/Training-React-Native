@@ -19,7 +19,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/tmminLogo.ico",
+        "foregroundImage": "./assets/images/tmminLogo.jpeg",
         "icon": "./assets/images/tmminLogo.ico",
         "backgroundColor": "#ffffff"
       },
