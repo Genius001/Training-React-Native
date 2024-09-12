@@ -5,7 +5,7 @@
     "slug": "TMMIN-Car-Rental-App",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/tmminLogo.jpeg",
+    "icon": "./assets/images/tmminLogo.ico",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "splash": {
@@ -19,8 +19,8 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/tmminLogo.jpeg",
-        "icon": "./assets/images/tmminLogo.jpeg",
+        "foregroundImage": "./assets/images/tmminLogo.ico",
+        "icon": "./assets/images/tmminLogo.ico",
         "backgroundColor": "#ffffff"
       },
       "permissions": [
