@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Button, ActivityIndicator, Modal, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, Button, ActivityIndicator, Modal, TouchableOpacity, Pressable } from "react-native";
 import { ProgressStep, ProgressSteps } from "react-native-progress-stepper";
 import formatIDR from '@/utils/formatCurrency';
 import Step1 from "./steps/Step1";
@@ -11,19 +11,22 @@ import { selectAuth } from '@/redux/reducers/auth/authSlice';
 import moment from 'moment';
 import React, { useState, useEffect } from "react";
 import OrderListModal from "@/components/OrderList";
+import { Feather } from "@expo/vector-icons";
+import { useNavigation } from "expo-router";
 
 export default function Payment() {
   const carDetail = useSelector(selectCarDetail);
   const { data, activeStep, selectedBank, status, errorMessage } = useSelector(selectOrder);
-  const { user, accessToken, isAuthenticated } = useSelector(selectAuth);
+  const { user, accessToken } = useSelector(selectAuth);
   const dispatch = useDispatch();
   const [modalVisible, setModalVisible] = useState(false);
   const [orderListVisible, setOrderListVisible] = useState(false);
+  const navigation = useNavigation();
 
   const handleOrder = async () => {
     if (!accessToken) {
-      console.error("User token is missing");
-      return; // Optionally, display an error message here
+      alert("Login First");
+      return;
     }
 
     const formData = {
@@ -36,7 +39,6 @@ export default function Payment() {
       await dispatch(postOrder({ token: accessToken, formData }));
     } catch (error) {
       console.error("Order submission failed", error);
-      // Optionally, handle errors here
     }
   };
 
@@ -44,12 +46,26 @@ export default function Payment() {
     if (status === "success") {
       dispatch(setStateByName({ name: 'activeStep', value: 1 }));
     } else if (status === "error") {
-      setModalVisible(true); // Show error message to user
+      setModalVisible(true);
     }
   }, [status]);
 
   return (
     <View style={styles.container}>
+      {activeStep < 2 && (
+        <Pressable
+          onPress={() => {
+            if (activeStep === 1) {
+              dispatch(setStateByName({ name: 'selectedBank', value: null }));
+            }
+            navigation.goBack();
+          }}
+          style={styles.backButton}
+        >
+          <Feather name="arrow-left" size={24} color="black" />
+          <Text style={styles.pembayaranText}>Pembayaran</Text>
+        </Pressable>
+      )}
       <ProgressSteps activeStep={activeStep}>
         <ProgressStep label="Pilih Metode" removeBtnRow={true}>
           <Step1 />
@@ -91,6 +107,11 @@ export default function Payment() {
               }}
               title="Konfirmasi Pembayaran"
             />
+          </>
+        )}
+
+        {activeStep > 0 && (
+          <>
             <View style={styles.buttonContainer}>
               <TouchableOpacity onPress={() => setOrderListVisible(true)}>
                 <Text style={styles.orderListText}>Lihat Daftar Pesanan</Text>
@@ -118,7 +139,6 @@ export default function Payment() {
           </View>
         </View>
       </Modal>
-
       <OrderListModal
         visible={orderListVisible}
         onClose={() => setOrderListVisible(false)}
@@ -157,6 +177,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     padding: 20,
+    zIndex: 1,
   },
   loadingContainer: {
     position: 'absolute',
@@ -207,5 +228,16 @@ const styles = StyleSheet.create({
   orderListText: {
     fontSize: 16,
     color: '#3D7B3F',
+  },
+  backButton: {
+    padding: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    zIndex: 2,
+  },
+  pembayaranText: {
+    fontSize: 18,
+    fontFamily: "PoppinsBold",
+    marginLeft: 10,
   },
 });

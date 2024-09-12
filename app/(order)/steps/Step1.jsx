@@ -6,6 +6,7 @@ import { selectCarDetail } from "@/redux/reducers/car/carDetailSlice";
 import ListCar from "@/components/ListCar";
 import Button from "@/components/Button";
 import { Feather } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native"; // <-- Import useNavigation
 
 const paymentMethods = [
   { bankName: "BCA", account: 12345678, name: "a. n Super Travel" },
@@ -18,8 +19,13 @@ export default function step1() {
   const { selectedBank, promo } = useSelector(selectOrder);
   const { data } = useSelector(selectCarDetail);
   const dispatch = useDispatch();
+  const navigation = useNavigation(); // <-- Initialize navigation
+
   return (
     <View style={{ flex: 1 }}>
+      <View style={styles.header}>
+      </View>
+
       <View style={styles.container}>
         <ListCar
           image={{ uri: data.image }}
@@ -117,6 +123,21 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 20,
   },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+  },
+  backButton: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  pembayaranText: {
+    fontSize: 18,
+    fontFamily: "PoppinsBold",
+    marginLeft: 10,
+  },
   textBold: {
     fontFamily: "PoppinsBold",
     fontSize: 16,
@@ -126,8 +147,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: 10,
-    borderWidthBottom: 1,
-    borderColorBottom: "#D0D0D0",
+    borderBottomWidth: 1,
+    borderColor: "#D0D0D0",
   },
   paymentBox: {
     width: "30%",

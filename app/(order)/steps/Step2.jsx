@@ -32,11 +32,13 @@ export default function Step2() {
   const copyToClipboard = async (text) => {
     const str = text.toString();
     await Clipboard.setStringAsync(str);
+    Alert.alert("Copied", "Text has been copied to the clipboard!");
   };
+
 
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [4, 3],
       quality: 0.2,
@@ -53,16 +55,19 @@ export default function Step2() {
   };
 
   const handleUpload = () => {
-    if (image) {
-      const formData = new FormData();
-      formData.append("slip", image);
-      dispatch(putOrderSlip({
-        token: accessToken,
-        id: data.id,
-        formData
-
-      }));
+    if (!image || !image.uri) {
+      Alert.alert("Error", "No image selected or invalid image.");
+      return;
     }
+
+    const formData = new FormData();
+    formData.append("slip", image);
+
+    dispatch(putOrderSlip({
+      token: accessToken,
+      id: data.id,
+      formData
+    }));
   };
 
   useEffect(() => {
